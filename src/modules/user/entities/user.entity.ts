@@ -92,7 +92,7 @@ export class User extends AbstractEntity {
   @IsDate()
   @Expose()
   @Column({ nullable: true })
-  dob?: string;
+  dob?: Date;
 
   @ApiProperty({ nullable: true, enum: Genders, enumName: 'Gender' })
   @ValidateIf((o) => o.gender !== null)

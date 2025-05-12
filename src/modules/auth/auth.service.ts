@@ -204,7 +204,6 @@ export class AuthService {
     }
 
     const otp = generateOTP();
-
     Promise.all([
       this.authCacheService.setOtpSession(existUser.id, otp),
       this.authEmailService.sendResetPasswordEmail(existUser.email, {

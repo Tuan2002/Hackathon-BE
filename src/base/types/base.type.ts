@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ResponsePagination {
   @ApiProperty()
@@ -18,8 +18,8 @@ export class ResponseController<T> {
   @ApiProperty()
   data: T;
 
-  @ApiPropertyOptional({ type: ResponsePagination })
-  pagination?: ResponsePagination;
+  // @ApiPropertyOptional({ type: ResponsePagination })
+  // pagination?: ResponsePagination;
 }
 
 export class ResponseApp<T> {
@@ -29,6 +29,6 @@ export class ResponseApp<T> {
   @ApiProperty()
   data: T;
 
-  @ApiPropertyOptional({ type: ResponsePagination })
-  pagination?: ResponsePagination;
+  // @ApiPropertyOptional({ type: ResponsePagination })
+  // pagination?: ResponsePagination;
 }
