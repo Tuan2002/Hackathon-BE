@@ -34,6 +34,7 @@ export class UserController {
 
   @ApiOperation({ summary: 'Lấy thông tin người dùng' })
   @ApiResponseType(BaseUserDto)
+  @RBAC(UserRoles.NORMAL_USER)
   @Get('get-user/:userId')
   async getUserById(@Param('userId') userId: string) {
     return await this.userService.getUserByIdAsync(userId);

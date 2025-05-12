@@ -28,9 +28,10 @@ export function OTPAuth() {
   );
 }
 
-export function RBAC(role: UserRoles) {
+export function RBAC(...roles: UserRoles[]) {
   return applyDecorators(
-    Roles(role),
+    Roles(...roles),
+    UseGuards(JwtAuthGuard),
     UseGuards(RBACGuard),
     ApiUnauthorizedResponse({ description: '401 - Unauthorized' }),
     ApiForbiddenResponse({ description: '403 - Forbidden' }),
