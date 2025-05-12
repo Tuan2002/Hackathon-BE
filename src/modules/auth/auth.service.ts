@@ -168,6 +168,7 @@ export class AuthService {
     );
 
     const newUser = this.usersRepository.create({
+      userName: email,
       email,
       hashedPassword: hashedPassword,
       firstName,

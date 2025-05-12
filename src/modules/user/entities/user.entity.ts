@@ -2,6 +2,7 @@ import { AbstractEntity } from '@base/entities/base.entity';
 import { SecurityOptions, Table } from '@constants';
 import { Genders } from '@modules/user/enums';
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import {
   IsDate,
   IsEmail,
@@ -20,12 +21,14 @@ import { UserRoles } from '../enums/roles.enum';
 export class User extends AbstractEntity {
   @ApiProperty()
   @IsNotEmpty()
+  @Expose()
   @IsString()
   @Column({ unique: true })
   userName: string;
 
   @ApiProperty()
   @IsNotEmpty()
+  @Expose()
   @IsEmail()
   @Column({ unique: true })
   email: string;
@@ -36,6 +39,7 @@ export class User extends AbstractEntity {
   hashedPassword: string;
 
   @ApiProperty()
+  @Expose()
   @Column({ default: false })
   // Automatically set to true when the user login fails 10 times
   isLocked: boolean;
@@ -50,6 +54,7 @@ export class User extends AbstractEntity {
 
   @ApiProperty({ enum: UserRoles, enumName: 'UserRoles' })
   @IsEnum(UserRoles)
+  @Expose()
   @IsNotEmpty()
   @Column({ enum: UserRoles })
   role: UserRoles;
@@ -57,42 +62,49 @@ export class User extends AbstractEntity {
   @ApiProperty({ nullable: true })
   @ValidateIf((o) => o.firstName !== null)
   @IsString()
+  @Expose()
   @Column({ nullable: true })
   firstName?: string;
 
   @ApiProperty({ nullable: true })
   @ValidateIf((o) => o.lastName !== null)
   @IsString()
+  @Expose()
   @Column({ nullable: true })
   lastName?: string;
 
   @ApiProperty({ nullable: true })
   @ValidateIf((o) => o.address !== null)
   @IsString()
+  @Expose()
   @Column({ nullable: true })
   address?: string;
 
   @ApiProperty({ nullable: true })
   @ValidateIf((o) => o.phone !== null)
   @IsString()
+  @Expose()
   @Column({ nullable: true })
   phone?: string;
 
   @ApiProperty({ nullable: true })
   @ValidateIf((o) => o.dob !== null)
   @IsDate()
+  @Expose()
   @Column({ nullable: true })
   dob?: string;
 
   @ApiProperty({ nullable: true, enum: Genders, enumName: 'Gender' })
   @ValidateIf((o) => o.gender !== null)
   @IsEnum(Genders)
+  @Expose()
   @Column({ nullable: true, enum: Genders })
   gender?: Genders;
 
   @ApiProperty({ nullable: true })
   @ValidateIf((o) => o.avatar !== null)
   @IsUrl()
+  @Expose()
   @Column({
     nullable: true,
   })
