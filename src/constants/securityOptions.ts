@@ -1,0 +1,8 @@
+export const SecurityOptions = {
+  JWT_EXPIRATION_TIME: '7d',
+  PASSWORD_SALT_ROUNDS: 10,
+  ATTEMPT_FAILURE_LIMIT: 5,
+  LOGIN_LOCKOUT_LIMIT: 10,
+  LOCKOUT_DURATION: 5 * 60, // 5 minutes
+  OTP_EXPIRATION_TIME: 5 * 60, // 5 minutes
+};
