@@ -5,6 +5,8 @@ export enum Table {
   Category = 'categories',
   Publisher = 'publishers',
   Author = 'authors',
+  Config = 'configs',
+  Banner = 'banners',
 }
 
 export const GLOBAL_PREFIX = 'v1';
@@ -27,3 +29,4 @@ export const CACHES = {
 
 export * from './errorCodes';
 export * from './securityOptions';
+
