@@ -128,6 +128,9 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.1
+      slug:
+        specifier: 8.2.3
+        version: 8.2.3
       socket.io:
         specifier: ^4.8.1
         version: 4.8.1
@@ -159,6 +162,9 @@ importers:
       '@types/node':
         specifier: ^20.3.1
         version: 20.17.13
+      '@types/slug':
+        specifier: ^5.0.9
+        version: 5.0.9
       '@types/supertest':
         specifier: ^2.0.12
         version: 2.0.16
@@ -1334,6 +1340,9 @@ packages:
 
   '@types/serve-static@1.15.7':
     resolution: {integrity: sha512-W8Ym+h8nhuRwaKPaDw34QUkwsGi6Rc4yYqvKFo5rm2FUEhCFbzVWrxXUxuKK8TASjWsysJY0nsmNCGhCOIsrOw==}
+
+  '@types/slug@5.0.9':
+    resolution: {integrity: sha512-6Yp8BSplP35Esa/wOG1wLNKiqXevpQTEF/RcL/NV6BBQaMmZh4YlDwCgrrFSoUE4xAGvnKd5c+lkQJmPrBAzfQ==}
 
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
@@ -3602,6 +3611,10 @@ packages:
   slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
     engines: {node: '>=8'}
+
+  slug@8.2.3:
+    resolution: {integrity: sha512-fXjhAZszNecz855GUNIwW0+sFPi9WV4bMiEKDOCA4wcq1ts1UnUVNy/F78B0Aat7/W3rA+se//33ILKNMrbeYQ==}
+    hasBin: true
 
   socket.io-adapter@2.5.5:
     resolution: {integrity: sha512-eLDQas5dzPgOWCk9GuuJC2lBqItuhKI4uxGgo9aIV7MYbk2h9Q6uULEh8WBzThoI7l+qU9Ast9fVUmkqPP9wYg==}
@@ -5921,6 +5934,8 @@ snapshots:
       '@types/http-errors': 2.0.4
       '@types/node': 20.17.13
       '@types/send': 0.17.4
+
+  '@types/slug@5.0.9': {}
 
   '@types/stack-utils@2.0.3': {}
 
@@ -8529,6 +8544,8 @@ snapshots:
   sisteransi@1.0.5: {}
 
   slash@3.0.0: {}
+
+  slug@8.2.3: {}
 
   socket.io-adapter@2.5.5:
     dependencies:

@@ -6,8 +6,7 @@ export class BaseCategoryDto extends PickType(Category, [
   'name',
   'slug',
   'description',
-  'isDeleted',
-  'deletedAt',
+  'isActive',
   'createdAt',
-  'deletedAt',
+  'updatedAt',
 ]) {}

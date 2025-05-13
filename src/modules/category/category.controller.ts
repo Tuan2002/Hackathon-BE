@@ -1,4 +1,4 @@
-import { Auth, RBAC } from '@base/decorators/auth.decorator';
+import { RBAC } from '@base/decorators/auth.decorator';
 import { ApiResponseType } from '@base/decorators/response-swagger.decorator';
 import { UserRoles } from '@modules/user/enums/roles.enum';
 import {
@@ -18,8 +18,8 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @ApiTags('Categories')
-@Auth()
-@RBAC(UserRoles.ADMIN)
+// @Auth()
+// @RBAC(UserRoles.ADMIN)
 @Controller('categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}

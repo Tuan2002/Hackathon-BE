@@ -2,10 +2,10 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Not, Repository } from 'typeorm';
-import { Category } from './entities/category.entity';
 import { BaseCategoryDto } from './dto/base-category.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { Category } from './entities/category.entity';
 
 @Injectable()
 export class CategoryService {
@@ -13,22 +13,6 @@ export class CategoryService {
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
   ) {}
-
-  private generateSlug(name: string): string {
-    // Loại bỏ dấu tiếng Việt và ký tự đặc biệt
-    const slug = name
-      .toLowerCase()
-      .normalize('NFD') // chuyển thành ký tự tổ hợp
-      .replace(/[\u0300-\u036f]/g, '') // xóa dấu
-      .replace(/[^a-z0-9\s-]/g, '') // xóa ký tự không phải chữ, số, khoảng trắng
-      .trim()
-      .replace(/\s+/g, '-'); // thay khoảng trắng bằng dấu gạch ngang
-
-    // Random số từ 1 đến 999
-    const randomNum = Math.floor(Math.random() * 999) + 1;
-
-    return `${slug}-${randomNum}`;
-  }
 
   async getAllCategoriesAsync() {
     const rawCategories = await this.categoryRepository.find({
@@ -73,11 +57,7 @@ export class CategoryService {
         message: 'Tên danh mục đã tồn tại',
       });
     }
-    const slug = this.generateSlug(createCategoryData.name);
-    const newCategory = this.categoryRepository.create({
-      ...createCategoryData,
-      slug,
-    });
+    const newCategory = this.categoryRepository.create(createCategoryData);
     const createdCategory = await this.categoryRepository.save(newCategory);
     return plainToInstance(BaseCategoryDto, createdCategory, {
       excludeExtraneousValues: true,
@@ -107,7 +87,6 @@ export class CategoryService {
     const updatedCategory = await this.categoryRepository.save({
       ...categoryInfo,
       ...updateData,
-      slug: this.generateSlug(updateData.name),
     });
     return plainToInstance(BaseCategoryDto, updatedCategory, {
       excludeExtraneousValues: true,

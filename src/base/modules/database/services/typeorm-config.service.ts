@@ -1,3 +1,4 @@
+import { Category } from '@modules/category/entities/category.entity';
 import { User } from '@modules/user/entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -19,7 +20,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       password: this.configService.getOrThrow<string>('POSTGRES_PASSWORD'),
       database: this.configService.getOrThrow<string>('POSTGRES_DATABASE'),
       synchronize: false,
-      entities: [User],
+      entities: [User, Category],
       namingStrategy: new SnakeNamingStrategy(),
       migrations: ['/migrations/**/*.ts'],
       logging: this.configService.get('NODE_ENV') !== 'production',
