@@ -1,4 +1,5 @@
 import { SecurityOptions } from '@constants';
+import { SystemService } from '@modules/system/system.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
@@ -14,6 +15,7 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private systemService: SystemService,
   ) {}
 
   async getAllUsersAsync() {
@@ -59,8 +61,9 @@ export class UserService {
         message: 'Email này đã được sử dụng',
       });
     }
+    const activeConfig = await this.systemService.getFullActiveConfigAsync();
     const hashedPassword = await bcrypt.hash(
-      SecurityOptions.DEFAULT_PASSWORD,
+      activeConfig?.config?.defaultPassword ?? SecurityOptions.DEFAULT_PASSWORD,
       SecurityOptions.PASSWORD_SALT_ROUNDS,
     );
     const newUser = this.usersRepository.create({

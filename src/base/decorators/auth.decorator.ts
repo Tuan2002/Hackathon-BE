@@ -33,6 +33,7 @@ export function RBAC(...roles: UserRoles[]) {
     Roles(...roles),
     UseGuards(JwtAuthGuard),
     UseGuards(RBACGuard),
+    ApiBearerAuth(),
     ApiUnauthorizedResponse({ description: '401 - Unauthorized' }),
     ApiForbiddenResponse({ description: '403 - Forbidden' }),
   );

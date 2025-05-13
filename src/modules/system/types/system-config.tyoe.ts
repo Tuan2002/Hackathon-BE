@@ -28,3 +28,24 @@ export class SystemConfig {
   @Expose()
   defaultPassword: string;
 }
+export class PublicSystemConfig {
+  @ApiProperty()
+  @IsNumber()
+  @Expose()
+  maxLoginAttempts: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @Expose()
+  maxHomePageDocument: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @Expose()
+  maxHomePageBanner: number;
+
+  @ApiProperty()
+  @IsNumber()
+  @Expose()
+  maxHomePagePost: number;
+}

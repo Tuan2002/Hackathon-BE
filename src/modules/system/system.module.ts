@@ -11,5 +11,6 @@ import { SystemService } from './system.service';
   imports: [TypeOrmModule.forFeature([Config, Banner]), SharedModule],
   controllers: [ConfigController, BannerController],
   providers: [SystemService],
+  exports: [SystemService],
 })
 export class SystemModule {}
