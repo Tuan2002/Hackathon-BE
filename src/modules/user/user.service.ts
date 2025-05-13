@@ -17,7 +17,7 @@ export class UserService {
   ) {}
 
   async getAllUsersAsync() {
-    const [rawUsers, count] = await this.usersRepository.findAndCount({
+    const rawUsers = await this.usersRepository.find({
       order: {
         createdAt: 'DESC',
       },
@@ -27,14 +27,11 @@ export class UserService {
         excludeExtraneousValues: true,
       });
     });
-    return {
-      users: userList,
-      totalRecords: count,
-    };
+    return userList;
   }
 
   async getDeletedUsersAsync() {
-    const [rawUsers, count] = await this.usersRepository.findAndCount({
+    const rawUsers = await this.usersRepository.find({
       withDeleted: true,
       where: {
         deletedAt: Not(null),
@@ -48,10 +45,7 @@ export class UserService {
         excludeExtraneousValues: true,
       });
     });
-    return {
-      users: userList,
-      totalRecords: count,
-    };
+    return userList;
   }
 
   async createUserAsync(createUserDto: CreateUserDto) {
@@ -71,6 +65,7 @@ export class UserService {
     );
     const newUser = this.usersRepository.create({
       ...createUserDto,
+      userName: createUserDto.email,
       hashedPassword,
     });
     const createdUser = await this.usersRepository.save(newUser);

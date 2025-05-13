@@ -15,7 +15,6 @@ import { BaseUserDto } from './dto/base-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user..dto';
 import { UserRoles } from './enums/roles.enum';
-import { GetUsersResponse } from './types/user.response';
 import { UserService } from './user.service';
 
 @ApiTags('Users')
@@ -26,7 +25,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @ApiOperation({ summary: 'Lấy danh sách người dùng' })
-  @ApiResponseType(GetUsersResponse)
+  @ApiResponseType(BaseUserDto, { isArray: true })
   @Get('get-users')
   async getAllUsers() {
     return await this.userService.getAllUsersAsync();
@@ -41,7 +40,7 @@ export class UserController {
   }
 
   @ApiOperation({ summary: 'Lấy danh sách người dùng đã xóa' })
-  @ApiResponseType(GetUsersResponse)
+  @ApiResponseType(BaseUserDto, { isArray: true })
   @Get('get-deleted-users')
   async getDeletedUsers() {
     return await this.userService.getDeletedUsersAsync();
