@@ -1,28 +1,15 @@
 import { FileType } from '@base/enums/file.enum';
-import { FileTypeGuard } from '@base/guards/file-type.guard';
-import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiConsumes,
-    ApiForbiddenResponse,
-    ApiNotAcceptableResponse,
-    ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
+import { StorageFolders } from '@base/enums/storage-folder.enum';
+import { UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { fileTypesFilter } from '../..//utils/file-filter.util';
+import { multerS3Config } from '../../configs/multer-s3.config';
 
-export const FILES_KEY = 'FILES';
-export const Files = (...fileTypes: FileType[]) =>
-  SetMetadata(FILES_KEY, fileTypes);
-
-export function FileTypes(...fileTypes: FileType[]) {
-  return applyDecorators(
-    Files(...fileTypes),
-    UseGuards(FileTypeGuard),
-    ApiBearerAuth(),
-    ApiConsumes('multipart/form-data'),
-    ApiUnauthorizedResponse({ description: '401 - Unauthorized' }),
-    ApiForbiddenResponse({ description: '403 - Forbidden' }),
-    ApiNotAcceptableResponse({
-      description: '406 - Not Acceptable',
+export function FilesUpload(folder?: StorageFolders, fileTypes?: FileType[]) {
+  return UseInterceptors(
+    FileInterceptor('file', {
+      storage: multerS3Config(folder),
+      fileFilter: (req, file, cb) => fileTypesFilter(file, cb, fileTypes),
     }),
   );
 }

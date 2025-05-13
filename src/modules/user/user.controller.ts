@@ -19,11 +19,11 @@ import { UserService } from './user.service';
 
 @ApiTags('Users')
 @Auth()
-@RBAC(UserRoles.ADMIN)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @RBAC(UserRoles.ADMIN)
   @ApiOperation({ summary: 'Lấy danh sách người dùng' })
   @ApiResponseType(BaseUserDto, { isArray: true })
   @Get('get-users')
@@ -39,6 +39,7 @@ export class UserController {
     return await this.userService.getUserByIdAsync(userId);
   }
 
+  @RBAC(UserRoles.ADMIN)
   @ApiOperation({ summary: 'Lấy danh sách người dùng đã xóa' })
   @ApiResponseType(BaseUserDto, { isArray: true })
   @Get('get-deleted-users')
@@ -46,6 +47,7 @@ export class UserController {
     return await this.userService.getDeletedUsersAsync();
   }
 
+  @RBAC(UserRoles.ADMIN)
   @ApiOperation({ summary: 'Tạo người dùng mới' })
   @ApiResponseType(BaseUserDto)
   @Post('create-user')
@@ -53,6 +55,7 @@ export class UserController {
     return await this.userService.createUserAsync(createUserDto);
   }
 
+  @RBAC(UserRoles.ADMIN)
   @ApiOperation({ summary: 'Cập nhật thông tin người dùng' })
   @ApiResponseType(BaseUserDto)
   @Put('update-user/:userId')
@@ -63,21 +66,40 @@ export class UserController {
     return await this.userService.updateUserAsync(userId, updateUserDto);
   }
 
+  @RBAC(UserRoles.ADMIN)
   @ApiOperation({ summary: 'Xóa người dùng' })
   @Delete('delete-user/:userId')
   async deleteUser(@Param('userId') userId: string) {
     return await this.userService.deleteUserAsync(userId);
   }
 
+  @RBAC(UserRoles.ADMIN)
   @ApiOperation({ summary: 'Khôi phục người dùng' })
   @Patch('restore-user/:userId')
   async restoreUser(@Param('userId') userId: string) {
     return await this.userService.restoreUserAsync(userId);
   }
 
+  @RBAC(UserRoles.ADMIN)
   @ApiOperation({ summary: 'Đặt lại mật khẩu người dùng' })
   @Patch('reset-password/:userId')
   async resetPassword(@Param('userId') userId: string) {
     return await this.userService.resetPasswordAsync(userId);
   }
+
+  // @Post('upload-file')
+  // @ApiOperation({ summary: 'Tải lên tệp' })
+  // @FilesUpload(StorageFolders.USER_AVATARS, [FileType.PDF])
+  // async uploadFile(
+  //   @UploadedFile() file: Express.MulterS3.File,
+  //   @Body() uploadData: any,
+  // ) {
+  //   console.log('Uploaded file:', file);
+  //   console.log('Upload data:', uploadData);
+  //   return {
+  //     message: 'File uploaded successfully',
+  //     file,
+  //     uploadData,
+  //   };
+  // }
 }

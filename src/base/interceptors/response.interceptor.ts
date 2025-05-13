@@ -16,7 +16,7 @@ export class ResponseInterceptor implements NestInterceptor {
         data: data?.data ?? data,
         pagination: data?.pagination,
         errorCode: null,
-        message: null,
+        message: data?.message,
       })),
     );
   }
