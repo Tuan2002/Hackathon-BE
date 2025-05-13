@@ -3,6 +3,8 @@ import { SecurityOptions } from './securityOptions';
 export enum Table {
   User = 'users',
   Category = 'categories',
+  Publisher = 'publishers',
+  Author = 'authors',
 }
 
 export const GLOBAL_PREFIX = 'v1';
