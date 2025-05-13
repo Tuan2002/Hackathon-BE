@@ -1,6 +1,7 @@
 import { ConfigAppModule } from '@base/modules/configs/config-app.module';
 import { DatabaseModule } from '@base/modules/database/database.module';
 import { AuthModule } from '@modules/auth/auth.module';
+import { CategoryModule } from '@modules/category/category.module';
 import { SharedModule } from '@modules/shared/shared.module';
 import { UserModule } from '@modules/user/user.module';
 import { Module } from '@nestjs/common';
@@ -13,6 +14,7 @@ import { PassportModule } from '@nestjs/passport';
     PassportModule,
     AuthModule,
     UserModule,
+    CategoryModule,
     SharedModule,
   ],
   controllers: [],

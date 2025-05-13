@@ -2,6 +2,7 @@ import { SecurityOptions } from './securityOptions';
 
 export enum Table {
   User = 'users',
+  Category = 'categories',
 }
 
 export const GLOBAL_PREFIX = 'v1';
@@ -24,4 +25,3 @@ export const CACHES = {
 
 export * from './errorCodes';
 export * from './securityOptions';
-
