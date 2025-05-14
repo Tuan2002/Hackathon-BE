@@ -148,7 +148,7 @@ export class Document extends AbstractEntity {
 
   // Relations
   // Category
-  @OneToMany(() => Category, (category) => category.documents, {
+  @ManyToOne(() => Category, (category) => category.documents, {
     nullable: true,
   })
   @JoinColumn({ name: 'category_id' })

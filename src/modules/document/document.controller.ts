@@ -16,10 +16,12 @@ import {
   Patch,
   Post,
   Put,
+  Res,
   UploadedFile,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
+import { Response } from 'express';
 import { DocumentFileService } from './document-file.service';
 import { DocumentService } from './document.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
@@ -43,7 +45,7 @@ export class DocumentController {
   @ApiConsumes('multipart/form-data')
   @FilesUpload(
     StorageFolders.DOCUMENTS,
-    [FileType.PDF],
+    [FileType.PDF, FileType.WORD_DOCX],
     StoragePermission.PRIVATE,
   )
   async uploadFile(@UploadedFile() file: Express.MulterS3.File) {
@@ -54,8 +56,8 @@ export class DocumentController {
 
   @Auth()
   @Get('get-my-documents')
-  @ApiOperation({ summary: 'Lấy danh sách tài liệu của người dùng' })
   @ApiResponseType(PublicDocumentDto)
+  @ApiOperation({ summary: 'Lấy danh sách tài liệu của người dùng' })
   async getMyDocuments(@UserRequest() context: AuthorizedContext) {
     return this.documentService.getDocumentsByOwnerIdAsync(context);
   }
@@ -166,5 +168,16 @@ export class DocumentController {
     @UserRequest() context: AuthorizedContext,
   ) {
     return this.documentFileService.getDownloadDocumentUrlAsync(context, id);
+  }
+
+  @Auth()
+  @Get('get-document-preview/:id')
+  @ApiOperation({ summary: 'Lấy tài liệu xem trước' })
+  async getDocumentPreview(@Param('id') id: string, @Res() res: Response) {
+    const fileBuffer =
+      await this.documentFileService.getDocumentPreviewAsync(id);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename=preview.pdf');
+    res.send(fileBuffer);
   }
 }

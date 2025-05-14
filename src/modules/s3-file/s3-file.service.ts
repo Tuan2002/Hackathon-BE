@@ -48,6 +48,6 @@ export class S3FileService {
     if (!Body) {
       return null;
     }
-    return Body.transformToByteArray();
+    return await Body.transformToByteArray();
   }
 }

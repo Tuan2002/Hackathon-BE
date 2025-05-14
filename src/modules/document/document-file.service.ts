@@ -1,10 +1,20 @@
+import { FileType } from '@base/enums/file.enum';
 import { SecurityOptions } from '@constants';
 import { AuthorizedContext } from '@modules/auth/types';
 import { S3FileService } from '@modules/s3-file/s3-file.service';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    InternalServerErrorException,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as dayjs from 'dayjs';
+import * as libre from 'libreoffice-convert';
+import { PDFDocument } from 'pdf-lib';
+import * as PDFKit from 'pdfkit';
 import { Repository } from 'typeorm';
+import { promisify } from 'util';
 import { Document } from './entities/document.entity';
 import { DownloadDocument } from './entities/download-document.entity';
 @Injectable()
@@ -46,5 +56,127 @@ export class DocumentFileService {
       url: signedUrl,
       expiresAt: dayjs().add(SecurityOptions.FILE_SIGN_TIME, 'second').toDate(),
     };
+  }
+
+  async getDocumentPreviewAsync(documentId: string) {
+    const document = await this.documentRepository.findOne({
+      where: { id: documentId },
+    });
+    const supportedFileTypes = [
+      FileType.PDF,
+      FileType.WORD_DOCX,
+      FileType.WORD_DOC,
+      FileType.IMAGE_PNG,
+      FileType.IMAGE_JPG,
+      FileType.IMAGE_JPEG,
+      FileType.TEXT,
+    ];
+    if (!document) {
+      throw new NotFoundException('Không tìm thấy tài liệu');
+    }
+
+    if (!document.fileKey || !document.fileType) {
+      throw new BadRequestException('Tài liệu không có tệp đính kèm');
+    }
+
+    if (!supportedFileTypes.includes(document.fileType)) {
+      throw new BadRequestException('Tài liệu không hỗ trợ xem trước');
+    }
+    // Create a preview PDF
+    return this.createPreviewFileAsync(document.fileKey, document.fileType);
+  }
+
+  async createPreviewFileAsync(fileKey: string, mimeType: FileType) {
+    try {
+      const fileBuffer = await this.s3FileService.getFileStreamAsync(fileKey);
+
+      // Determine file mime type
+      let pdfBuffer: Buffer;
+
+      if (mimeType === FileType.PDF) {
+        pdfBuffer = Buffer.from(fileBuffer);
+      } else {
+        pdfBuffer = await this.convertToPdf(Buffer.from(fileBuffer), mimeType);
+      }
+
+      // Load the PDF
+      const pdfDoc = await PDFDocument.load(pdfBuffer);
+      const totalPages = pdfDoc.getPageCount();
+      const previewPageCount = Math.min(
+        SecurityOptions.PDF_PREVIEW_PAGE_LIMIT,
+        totalPages,
+      );
+
+      // Create a new PDF document for the preview
+      const previewDoc = await PDFDocument.create();
+      const pages = await previewDoc.copyPages(
+        pdfDoc,
+        Array.from({ length: previewPageCount }, (_, i) => i),
+      );
+      pages.forEach((page) => previewDoc.addPage(page));
+
+      // Save the preview PDF
+      const previewBytes = await previewDoc.save();
+      return Buffer.from(previewBytes);
+    } catch (error) {
+      console.error('Error creating PDF preview:', error);
+      throw new InternalServerErrorException('Failed to create PDF preview');
+    }
+  }
+
+  private convertAsync = promisify(libre.convert);
+  private async convertToPdf(
+    fileBuffer: Buffer,
+    mimeType: FileType,
+  ): Promise<Buffer> {
+    try {
+      if ([FileType.WORD_DOCX, FileType.WORD_DOC].includes(mimeType)) {
+        // Convert Word documents using libreoffice-convert
+        return await this.convertAsync(fileBuffer, '.pdf', undefined);
+      } else if (mimeType === FileType.TEXT) {
+        // Convert text files using pdfkit
+        return await this.textToPdf(fileBuffer);
+      } else if (mimeType.startsWith('image/')) {
+        // Convert images using pdfkit
+        return await this.imageToPdf(fileBuffer);
+      } else {
+        throw new Error(`Unsupported file type: ${mimeType}`);
+      }
+    } catch (error) {
+      console.error('Error converting file to PDF:', error);
+      throw new Error('Failed to convert file to PDF');
+    }
+  }
+
+  private async textToPdf(fileBuffer: Buffer): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      const doc = new PDFKit();
+      const chunks: Buffer[] = [];
+
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      const text = fileBuffer.toString('utf-8');
+      doc.fontSize(12).text(text, 50, 50);
+      doc.end();
+    });
+  }
+
+  private async imageToPdf(fileBuffer: Buffer): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      const doc = new PDFKit();
+      const chunks: Buffer[] = [];
+
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+      doc.image(fileBuffer, 50, 50, {
+        fit: [500, 500],
+        align: 'center',
+        valign: 'center',
+      });
+      doc.end();
+    });
   }
 }
