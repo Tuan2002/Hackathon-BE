@@ -4,6 +4,7 @@ export class BaseDocumentDto extends PickType(Document, [
   'id',
   'name',
   'slug',
+  'image',
   'shortDescription',
   'categoryId',
   'authorId',

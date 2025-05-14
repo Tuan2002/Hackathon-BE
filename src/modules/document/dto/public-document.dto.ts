@@ -1,6 +1,8 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Document } from '../entities/document.entity';
 export class PublicDocumentDto extends PickType(Document, [
+  'id',
+  'image',
   'name',
   'slug',
   'description',
