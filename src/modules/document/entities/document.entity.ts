@@ -12,6 +12,7 @@ import {
   IsIn,
   IsNotEmpty,
   IsString,
+  IsUrl,
   IsUUID,
   ValidateIf,
 } from 'class-validator';
@@ -46,6 +47,14 @@ export class Document extends AbstractEntity {
   @Expose()
   @Column()
   name: string;
+
+  @ApiProperty({ nullable: true })
+  @ValidateIf((o) => o.image !== undefined)
+  @IsNotEmpty()
+  @IsUrl()
+  @Expose()
+  @Column({ nullable: true })
+  image: string;
 
   @ApiProperty({ enum: DocumentStatus, enumName: 'DocumentStatus' })
   @IsEnum(DocumentStatus)
