@@ -1,5 +1,9 @@
 import { Author } from '@modules/author/entities/author.entity';
 import { Category } from '@modules/category/entities/category.entity';
+import { DocumentComment } from '@modules/document/entities/document-comment.entity';
+import { Document } from '@modules/document/entities/document.entity';
+import { DownloadDocument } from '@modules/document/entities/download-document.entity';
+import { FavoriteDocument } from '@modules/document/entities/favorite-document.entity';
 import { Publisher } from '@modules/publisher/entities/publisher.entity';
 import { Banner } from '@modules/system/entities/banner.entity';
 import { Config } from '@modules/system/entities/config.entity';
@@ -24,7 +28,18 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       password: this.configService.getOrThrow<string>('POSTGRES_PASSWORD'),
       database: this.configService.getOrThrow<string>('POSTGRES_DATABASE'),
       synchronize: false,
-      entities: [User, Category, Config, Banner, Publisher, Author],
+      entities: [
+        User,
+        Category,
+        Config,
+        Banner,
+        Publisher,
+        Author,
+        Document,
+        DownloadDocument,
+        FavoriteDocument,
+        DocumentComment,
+      ],
       namingStrategy: new SnakeNamingStrategy(),
       migrations: ['/migrations/**/*.ts'],
       logging: this.configService.get('NODE_ENV') !== 'production',

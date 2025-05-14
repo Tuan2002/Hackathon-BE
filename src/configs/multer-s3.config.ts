@@ -1,8 +1,9 @@
 import { S3Client } from '@aws-sdk/client-s3';
 import { StorageEngine } from 'multer';
 import * as multerS3 from 'multer-s3';
+import * as slug from 'slug';
 
-const s3Instance = new S3Client({
+const s3Client = new S3Client({
   endpoint: process.env.DO_SPACE_ENDPOINT,
   credentials: {
     accessKeyId: process.env.DO_SPACE_ACCESS_KEY,
@@ -13,16 +14,17 @@ const s3Instance = new S3Client({
 
 export const multerS3Config = (folderName?: string): StorageEngine =>
   multerS3({
-    s3: s3Instance,
+    s3: s3Client,
     bucket: process.env.DO_SPACE_BUCKET_NAME,
     acl: 'public-read',
     metadata: (req, file, cb) => {
       cb(null, { fieldName: file.fieldname });
     },
     key: (req, file, cb) => {
+      const [fileName, fileExtension] = file.originalname.split('.');
       const fileKey = folderName
-        ? `${folderName}/${Date.now()}-${file.originalname}`
-        : `${Date.now()}-${file.originalname}`;
+        ? `${folderName}/${Date.now()}-${slug(fileName)}.${fileExtension}`
+        : `${Date.now()}-${slug(fileName)}.${fileExtension}`;
       cb(null, fileKey);
     },
   });

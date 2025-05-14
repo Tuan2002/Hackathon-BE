@@ -7,6 +7,10 @@ export enum Table {
   Author = 'authors',
   Config = 'configs',
   Banner = 'banners',
+  Document = 'documents',
+  DocumentComment = 'document_comments',
+  DownloadDocument = 'download_documents',
+  FavoriteDocument = 'favorite_documents',
 }
 
 export const GLOBAL_PREFIX = 'v1';

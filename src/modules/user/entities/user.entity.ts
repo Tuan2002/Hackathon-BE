@@ -1,5 +1,9 @@
 import { AbstractEntity } from '@base/entities/base.entity';
 import { SecurityOptions, Table } from '@constants';
+import { DocumentComment } from '@modules/document/entities/document-comment.entity';
+import { Document } from '@modules/document/entities/document.entity';
+import { DownloadDocument } from '@modules/document/entities/download-document.entity';
+import { FavoriteDocument } from '@modules/document/entities/favorite-document.entity';
 import { Genders } from '@modules/user/enums';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
@@ -13,9 +17,8 @@ import {
   MinLength,
   ValidateIf,
 } from 'class-validator';
-import { BeforeUpdate, Column, Entity, Index } from 'typeorm';
+import { BeforeUpdate, Column, Entity, Index, OneToMany } from 'typeorm';
 import { UserRoles } from '../enums/roles.enum';
-
 @Index(['email'], { unique: true })
 @Entity(Table.User)
 export class User extends AbstractEntity {
@@ -109,6 +112,30 @@ export class User extends AbstractEntity {
     nullable: true,
   })
   avatar?: string;
+
+  // Relations
+
+  // Documents
+  @OneToMany(() => Document, (document) => document.owner)
+  documents: Document[];
+
+  @OneToMany(
+    () => DownloadDocument,
+    (downloadDocument) => downloadDocument.downloadUser,
+  )
+  downloadDocuments: DownloadDocument[];
+
+  @OneToMany(
+    () => FavoriteDocument,
+    (favoriteDocument) => favoriteDocument.favoriteUser,
+  )
+  favoriteDocuments: FavoriteDocument[];
+
+  @OneToMany(
+    () => DocumentComment,
+    (documentComment) => documentComment.commenter,
+  )
+  documentComments: DocumentComment[];
 
   @BeforeUpdate()
   lockoutUser() {
