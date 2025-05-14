@@ -1,4 +1,3 @@
-import { RBAC } from '@base/decorators/auth.decorator';
 import { AuthorizedContext } from '@modules/auth/types';
 import { UserRoles } from '@modules/user/enums/roles.enum';
 import {
@@ -22,7 +21,6 @@ export class DocumentService {
     private documentRepository: Repository<Document>,
   ) {}
 
-  @RBAC(UserRoles.ADMIN, UserRoles.NORMAL_USER)
   async createDocumentAsync(
     context: AuthorizedContext,
     createDocumentDto: CreateDocumentDto,

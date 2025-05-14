@@ -96,11 +96,15 @@ export class Document extends AbstractEntity {
 
   @ApiProperty({ nullable: true })
   @Expose()
+  @ValidateIf((o) => o.shortDescription !== undefined)
+  @IsString()
   @Column({ nullable: true })
   shortDescription?: string;
 
   @ApiProperty({ nullable: true })
+  @ValidateIf((o) => o.description !== undefined)
   @Expose()
+  @IsString()
   @Column({ type: 'text', nullable: true })
   description?: string;
 
@@ -137,10 +141,9 @@ export class Document extends AbstractEntity {
     FileType.PDF,
     FileType.WORD_DOC,
     FileType.WORD_DOCX,
-    FileType.EXCEL_XLS,
-    FileType.EXCEL_XLSX,
-    FileType.POWERPOINT_PPT,
-    FileType.POWERPOINT_PPTX,
+    FileType.IMAGE_PNG,
+    FileType.IMAGE_JPG,
+    FileType.IMAGE_JPEG,
     FileType.TEXT,
   ])
   @Column({ nullable: true })
