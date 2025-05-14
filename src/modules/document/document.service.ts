@@ -101,9 +101,18 @@ export class DocumentService {
       },
     });
     return documents.map((document) =>
-      plainToInstance(PublicDocumentDto, document, {
-        excludeExtraneousValues: true,
-      }),
+      plainToInstance(
+        PublicDocumentDto,
+        {
+          ...document,
+          categoryName: document?.category?.name,
+          authorName: document?.author?.name,
+          publisherName: document?.publisher?.name,
+        },
+        {
+          excludeExtraneousValues: true,
+        },
+      ),
     );
   }
 
