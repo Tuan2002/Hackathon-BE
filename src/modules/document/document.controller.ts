@@ -4,6 +4,7 @@ import { ApiResponseType } from '@base/decorators/response-swagger.decorator';
 import { UserRequest } from '@base/decorators/user-request.decorator';
 import { FileType } from '@base/enums/file.enum';
 import { StorageFolders } from '@base/enums/storage-folder.enum';
+import { StoragePermission } from '@base/enums/storage-permission.enum';
 import { AuthorizedContext } from '@modules/auth/types';
 import { UserRoles } from '@modules/user/enums/roles.enum';
 import {
@@ -19,15 +20,20 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
+import { DocumentFileService } from './document-file.service';
 import { DocumentService } from './document.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
+import { DownloadFileDto } from './dto/download-file.dto';
 import { FileUploadDto, FileUploadResponseDto } from './dto/file-upload.dto';
 import { PublicDocumentDto } from './dto/public-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 @ApiTags('Documents')
 @Controller('documents')
 export class DocumentController {
-  constructor(private readonly documentService: DocumentService) {}
+  constructor(
+    private readonly documentService: DocumentService,
+    private readonly documentFileService: DocumentFileService,
+  ) {}
 
   @RBAC(UserRoles.ADMIN, UserRoles.NORMAL_USER)
   @Post('upload-document')
@@ -35,7 +41,11 @@ export class DocumentController {
   @ApiResponseType(FileUploadResponseDto)
   @ApiBody({ type: FileUploadDto })
   @ApiConsumes('multipart/form-data')
-  @FilesUpload(StorageFolders.DOCUMENTS, [FileType.PDF])
+  @FilesUpload(
+    StorageFolders.DOCUMENTS,
+    [FileType.PDF],
+    StoragePermission.PRIVATE,
+  )
   async uploadFile(@UploadedFile() file: Express.MulterS3.File) {
     return plainToInstance(FileUploadResponseDto, file, {
       excludeExtraneousValues: true,
@@ -145,5 +155,16 @@ export class DocumentController {
     @UserRequest() context: AuthorizedContext,
   ) {
     return this.documentService.toggleDocumentActiveAsync(context, id);
+  }
+
+  @Auth()
+  @Get('get-download-url/:id')
+  @ApiOperation({ summary: 'Lấy link tải tài liệu' })
+  @ApiResponseType(DownloadFileDto)
+  async getDownloadDocumentUrl(
+    @Param('id') id: string,
+    @UserRequest() context: AuthorizedContext,
+  ) {
+    return this.documentFileService.getDownloadDocumentUrlAsync(context, id);
   }
 }

@@ -1,4 +1,5 @@
 import { S3Client } from '@aws-sdk/client-s3';
+import { StoragePermission } from '@base/enums/storage-permission.enum';
 import { StorageEngine } from 'multer';
 import * as multerS3 from 'multer-s3';
 import * as slug from 'slug';
@@ -12,11 +13,14 @@ const s3Client = new S3Client({
   region: process.env.DO_SPACE_REGION,
 });
 
-export const multerS3Config = (folderName?: string): StorageEngine =>
+export const multerS3Config = (
+  folderName?: string,
+  permission: StoragePermission = StoragePermission.PUBLIC,
+): StorageEngine =>
   multerS3({
     s3: s3Client,
     bucket: process.env.DO_SPACE_BUCKET_NAME,
-    acl: 'public-read',
+    acl: permission ?? StoragePermission.PUBLIC,
     metadata: (req, file, cb) => {
       cb(null, { fieldName: file.fieldname });
     },

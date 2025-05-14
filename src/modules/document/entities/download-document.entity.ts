@@ -4,15 +4,15 @@ import { User } from '@modules/user/entities/user.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import {
-    Column,
-    CreateDateColumn,
-    Entity,
-    JoinColumn,
-    ManyToOne,
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { Document } from './document.entity';
 
-@Entity(Table.Document)
+@Entity(Table.DownloadDocument)
 export class DownloadDocument extends AbstractEntity {
   @ApiProperty()
   @Expose()

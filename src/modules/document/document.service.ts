@@ -127,6 +127,12 @@ export class DocumentService {
     if (!document) {
       throw new NotFoundException('Không tìm thấy tài liệu');
     }
+    await this.documentRepository.increment(
+      { id: document.id },
+      'viewCount',
+      1,
+    );
+
     return plainToInstance(PublicDocumentDto, document, {
       excludeExtraneousValues: true,
     });
