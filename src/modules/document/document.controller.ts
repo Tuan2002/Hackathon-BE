@@ -22,12 +22,14 @@ import {
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
+import { DocumentAiService } from './document-ai.service';
 import { DocumentFileService } from './document-file.service';
 import { DocumentService } from './document.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { DownloadFileDto } from './dto/download-file.dto';
 import { FileUploadDto, FileUploadResponseDto } from './dto/file-upload.dto';
 import { PublicDocumentDto } from './dto/public-document.dto';
+import { SummaryDocumentDto } from './dto/summery-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 @ApiTags('Documents')
 @Controller('documents')
@@ -35,6 +37,7 @@ export class DocumentController {
   constructor(
     private readonly documentService: DocumentService,
     private readonly documentFileService: DocumentFileService,
+    private readonly documentAiService: DocumentAiService,
   ) {}
 
   @RBAC(UserRoles.ADMIN, UserRoles.NORMAL_USER)
@@ -179,5 +182,13 @@ export class DocumentController {
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'inline; filename=preview.pdf');
     res.send(fileBuffer);
+  }
+
+  @Auth()
+  @Get('generate-summary/:id')
+  @ApiOperation({ summary: 'Tạo tóm tắt tài liệu' })
+  @ApiResponseType(SummaryDocumentDto)
+  async generateSummary(@Param('id') id: string) {
+    return this.documentAiService.generateSummaryAsync(id);
   }
 }

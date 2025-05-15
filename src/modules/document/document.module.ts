@@ -2,6 +2,7 @@ import { GeminiModule } from '@modules/gemini/gemini.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { S3FileModule } from '../s3-file/s3-file.module';
+import { DocumentAiService } from './document-ai.service';
 import { DocumentFileService } from './document-file.service';
 import { DocumentController } from './document.controller';
 import { DocumentService } from './document.service';
@@ -22,7 +23,7 @@ import { FavoriteDocument } from './entities/favorite-document.entity';
     GeminiModule,
   ],
   controllers: [DocumentController],
-  providers: [DocumentService, DocumentFileService],
-  exports: [DocumentService, DocumentFileService],
+  providers: [DocumentService, DocumentFileService, DocumentAiService],
+  exports: [DocumentService, DocumentFileService, DocumentAiService],
 })
 export class DocumentModule {}
