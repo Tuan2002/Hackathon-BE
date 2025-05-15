@@ -29,6 +29,11 @@ export const CACHES = {
     getKey: (userId: string) => `RESET_PASSWORD_SESSION:${userId}`,
     expiredTime: SecurityOptions.OTP_EXPIRATION_TIME, // 5 minutes
   },
+
+  DOCUMENT_SUMMARY: {
+    getKey: (documentId: string) => `DOCUMENT_SUMMARY:${documentId}`,
+    expiredTime: 30 * 60, // 30 minutes
+  },
 };
 
 export * from './errorCodes';
