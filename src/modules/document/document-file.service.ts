@@ -12,11 +12,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import axios, { HttpStatusCode } from 'axios';
 import * as dayjs from 'dayjs';
 import * as FormData from 'form-data';
-import * as libre from 'libreoffice-convert';
 import { PDFDocument } from 'pdf-lib';
-import * as PDFKit from 'pdfkit';
 import { Repository } from 'typeorm';
-import { promisify } from 'util';
 import { Document } from './entities/document.entity';
 import { DownloadDocument } from './entities/download-document.entity';
 @Injectable()
@@ -98,38 +95,17 @@ export class DocumentFileService {
     mimeType: FileType,
   ) {
     try {
-      const fileBuffer = await this.s3FileService.getFileStreamAsync(fileKey);
+      const pdfBuffer = await this.convertToPdfAsync(
+        fileKey,
+        fileName,
+        mimeType,
+      );
 
-      let pdfBuffer: Buffer;
-      if (mimeType !== FileType.PDF) {
-        const form = new FormData();
-        form.append('fileInput', Buffer.from(fileBuffer), {
-          filename: fileName,
-          contentType: mimeType,
-        });
-
-        const response = await axios.post(
-          `${process.env.PDF_CONVERT_API_URL}/api/v1/convert/file/pdf`,
-          form,
-          {
-            headers: {
-              ...form.getHeaders(),
-            },
-            responseType: 'arraybuffer', // important to get raw buffer back
-          },
-        );
-
-        if (response.status !== HttpStatusCode.Ok) {
-          throw new InternalServerErrorException(
-            'Failed to convert file to PDF on remote server',
-          );
-        }
-        pdfBuffer = Buffer.from(response.data);
-      } else {
-        // If the file is already a PDF, use it directly
-        pdfBuffer = Buffer.from(fileBuffer);
+      if (!pdfBuffer) {
+        throw new BadRequestException('Tạo tệp PDF không thành công');
       }
 
+      // Check if the PDF is empty
       // Load the PDF
       const pdfDoc = await PDFDocument.load(pdfBuffer);
       const totalPages = pdfDoc.getPageCount();
@@ -155,59 +131,49 @@ export class DocumentFileService {
     }
   }
 
-  private convertAsync = promisify(libre.convert);
-  private async convertToPdf(
-    fileBuffer: Buffer,
+  public async convertToPdfAsync(
+    fileKey: string,
+    fileName: string,
     mimeType: FileType,
-  ): Promise<Buffer> {
+  ) {
     try {
-      if ([FileType.WORD_DOCX, FileType.WORD_DOC].includes(mimeType)) {
-        // Convert Word documents using libreoffice-convert
-        return await this.convertAsync(fileBuffer, '.pdf', undefined);
-      } else if (mimeType === FileType.TEXT) {
-        // Convert text files using pdfkit
-        return await this.textToPdf(fileBuffer);
-      } else if (mimeType.startsWith('image/')) {
-        // Convert images using pdfkit
-        return await this.imageToPdf(fileBuffer);
-      } else {
-        throw new Error(`Unsupported file type: ${mimeType}`);
+      if (!fileKey || !fileName || !mimeType) {
+        throw new BadRequestException('Invalid file parameters');
       }
+      const fileBuffer = await this.s3FileService.getFileStreamAsync(fileKey);
+
+      if (mimeType === FileType.PDF) {
+        return Buffer.from(fileBuffer);
+      }
+
+      const form = new FormData();
+      form.append('fileInput', Buffer.from(fileBuffer), {
+        filename: fileName,
+        contentType: mimeType,
+      });
+
+      const response = await axios.post(
+        `${process.env.PDF_CONVERT_API_URL}/api/v1/convert/file/pdf`,
+        form,
+        {
+          headers: {
+            ...form.getHeaders(),
+          },
+          responseType: 'arraybuffer',
+        },
+      );
+
+      if (response.status !== HttpStatusCode.Ok) {
+        throw new InternalServerErrorException(
+          'Failed to convert file to PDF on remote server',
+        );
+      }
+      return Buffer.from(response.data);
     } catch (error) {
       console.error('Error converting file to PDF:', error);
-      throw new Error('Failed to convert file to PDF');
+      throw new BadRequestException(
+        'Failed to convert file to PDF. Please check the file format.',
+      );
     }
-  }
-
-  private async textToPdf(fileBuffer: Buffer): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-      const doc = new PDFKit();
-      const chunks: Buffer[] = [];
-
-      doc.on('data', (chunk) => chunks.push(chunk));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
-
-      const text = fileBuffer.toString('utf-8');
-      doc.fontSize(12).text(text, 50, 50);
-      doc.end();
-    });
-  }
-
-  private async imageToPdf(fileBuffer: Buffer): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-      const doc = new PDFKit();
-      const chunks: Buffer[] = [];
-
-      doc.on('data', (chunk) => chunks.push(chunk));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
-      doc.image(fileBuffer, 50, 50, {
-        fit: [500, 500],
-        align: 'center',
-        valign: 'center',
-      });
-      doc.end();
-    });
   }
 }
