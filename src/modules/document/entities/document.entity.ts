@@ -108,6 +108,13 @@ export class Document extends AbstractEntity {
   @Column({ type: 'text', nullable: true })
   description?: string;
 
+  @ApiProperty({ nullable: true })
+  @ValidateIf((o) => o.status === DocumentStatus.REJECTED)
+  @Expose()
+  @IsString()
+  @Column({ nullable: true })
+  rejectedReason?: string;
+
   @ApiProperty()
   @Expose()
   @Column({ default: 0 })

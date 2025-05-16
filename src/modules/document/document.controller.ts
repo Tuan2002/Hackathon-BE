@@ -29,6 +29,7 @@ import { CreateDocumentDto } from './dto/create-document.dto';
 import { DownloadFileDto } from './dto/download-file.dto';
 import { FileUploadDto, FileUploadResponseDto } from './dto/file-upload.dto';
 import { PublicDocumentDto } from './dto/public-document.dto';
+import { RejectDocumentDto } from './dto/reject-document.dto';
 import { SummaryDocumentDto } from './dto/summery-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 @ApiTags('Documents')
@@ -141,8 +142,11 @@ export class DocumentController {
   @RBAC(UserRoles.ADMIN)
   @Patch('reject-document/:id')
   @ApiOperation({ summary: 'Từ chối tài liệu' })
-  async rejectDocument(@Param('id') id: string) {
-    return this.documentService.rejectDocumentAsync(id);
+  async rejectDocument(
+    @Param('id') id: string,
+    @Body() rejectDocumentDto: RejectDocumentDto,
+  ) {
+    return this.documentService.rejectDocumentAsync(id, rejectDocumentDto);
   }
 
   @RBAC(UserRoles.ADMIN)

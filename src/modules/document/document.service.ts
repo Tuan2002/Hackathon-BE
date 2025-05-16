@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { BaseDocumentDto } from './dto/base-document.dto';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { PublicDocumentDto } from './dto/public-document.dto';
+import { RejectDocumentDto } from './dto/reject-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { Document } from './entities/document.entity';
 import { DocumentStatus } from './enums/document-status.enum';
@@ -28,7 +29,12 @@ export class DocumentService {
     const document = this.documentRepository.create({
       ...createDocumentDto,
       ownerId: context.userId,
+      status:
+        context.role === UserRoles.ADMIN
+          ? DocumentStatus.APPROVED
+          : DocumentStatus.PENDING,
     });
+
     const createdDocument = await this.documentRepository.save(document);
     return plainToInstance(
       BaseDocumentDto,
@@ -215,7 +221,7 @@ export class DocumentService {
     };
   }
 
-  async rejectDocumentAsync(id: string) {
+  async rejectDocumentAsync(id: string, rejectDocumentDto: RejectDocumentDto) {
     const document = await this.documentRepository.findOne({
       where: { id },
     });
@@ -224,6 +230,7 @@ export class DocumentService {
     }
     await this.documentRepository.update(id, {
       status: DocumentStatus.REJECTED,
+      rejectedReason: rejectDocumentDto.reason,
     });
     return {
       documentId: document.id,

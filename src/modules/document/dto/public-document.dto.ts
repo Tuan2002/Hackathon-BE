@@ -8,6 +8,7 @@ export class PublicDocumentDto extends PickType(Document, [
   'slug',
   'description',
   'shortDescription',
+  'rejectedReason',
   'categoryId',
   'authorId',
   'publisherId',
