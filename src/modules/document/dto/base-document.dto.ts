@@ -27,6 +27,10 @@ export class BaseDocumentDto extends PickType(Document, [
 
   @ApiProperty()
   @Expose()
+  categorySlug?: string;
+
+  @ApiProperty()
+  @Expose()
   authorName?: string;
 
   @ApiProperty()

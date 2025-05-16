@@ -68,6 +68,7 @@ export class DocumentService {
           ...document,
           categoryName: document?.category?.name,
           authorName: document?.author?.name,
+          categorySlug: document?.category?.slug,
           publisherName: document?.publisher?.name,
         },
         {
@@ -126,6 +127,7 @@ export class DocumentService {
           ...document,
           categoryName: document?.category?.name,
           authorName: document?.author?.name,
+          categorySlug: document?.category?.slug,
           publisherName: document?.publisher?.name,
           isFavorite: false,
           favoriteCount: document?.favoriteDocuments?.length || 0,
@@ -151,6 +153,7 @@ export class DocumentService {
           ...document,
           categoryName: document?.category?.name,
           authorName: document?.author?.name,
+          categorySlug: document?.category?.slug,
           publisherName: document?.publisher?.name,
         },
         {
@@ -241,6 +244,7 @@ export class DocumentService {
         ...updatedDocument,
         categoryName: updatedDocument?.category?.name,
         authorName: updatedDocument?.author?.name,
+        categorySlug: updatedDocument?.category?.slug,
         publisherName: updatedDocument?.publisher?.name,
       },
       {
@@ -442,6 +446,7 @@ export class DocumentService {
           ...document,
           categoryName: document?.category?.name,
           authorName: document?.author?.name,
+          categorySlug: document?.category?.slug,
           publisherName: document?.publisher?.name,
         },
         {
@@ -472,13 +477,14 @@ export class DocumentService {
     const mappedDownloadedDocuments = new Map(
       downloadedDocuments.map((doc) => [doc.documentId, doc]),
     );
-    return documents.map((document) => {
+    return documents.map((document) =>
       plainToInstance(
         PublicDocumentDto,
         {
           ...document,
           categoryName: document?.category?.name,
           authorName: document?.author?.name,
+          categorySlug: document?.category?.slug,
           publisherName: document?.publisher?.name,
           downloadedAt: mappedDownloadedDocuments.get(document.id)
             ?.downloadedAt,
@@ -486,8 +492,8 @@ export class DocumentService {
         {
           excludeExtraneousValues: true,
         },
-      );
-    });
+      ),
+    );
   }
 
   async getAllDownloadedDocumentsAsync() {
@@ -512,22 +518,23 @@ export class DocumentService {
       downloadedDocuments.map((doc) => [doc.documentId, doc]),
     );
 
-    return documents.map((document) => {
-      const downloadedDocument = mappedDownloadedDocuments.get(document.id);
-      return plainToInstance(
+    return documents.map((document) =>
+      plainToInstance(
         DownloadedDocumentDto,
         {
           ...document,
           categoryName: document?.category?.name,
           authorName: document?.author?.name,
+          categorySlug: document?.category?.slug,
           publisherName: document?.publisher?.name,
-          downloadedAt: downloadedDocument?.downloadedAt,
-          downloadedBy: `${downloadedDocument?.downloadUser?.firstName} ${downloadedDocument?.downloadUser?.lastName}`,
+          downloadedAt: mappedDownloadedDocuments.get(document.id)
+            ?.downloadedAt,
+          downloadedBy: `${mappedDownloadedDocuments.get(document.id)?.downloadUser.firstName} ${mappedDownloadedDocuments.get(document.id)?.downloadUser?.lastName}`,
         },
         {
           excludeExtraneousValues: true,
         },
-      );
-    });
+      ),
+    );
   }
 }
