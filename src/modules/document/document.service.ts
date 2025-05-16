@@ -82,7 +82,7 @@ export class DocumentService {
     categoryId?: string,
     authorId?: string,
   ) {
-    const rawDocuments = await this.documentRepository.find({
+    const documents = await this.documentRepository.find({
       where: {
         status: DocumentStatus.APPROVED,
         isActive: true,
@@ -94,16 +94,15 @@ export class DocumentService {
         createdAt: 'DESC',
       },
     });
-
     if (context) {
       const favoriteDocumentIds = await this.favoriteDocumentRepository.find({
         where: { userId: context.userId },
         select: ['documentId'],
       });
-      const favoriteDocumentMap = new Map(
-        favoriteDocumentIds.map((doc) => [doc.documentId, true]),
+      const mappedFavoriteDocuments = new Map(
+        favoriteDocumentIds.map((doc) => [doc.documentId, doc.documentId]),
       );
-      return rawDocuments.map((document) =>
+      return documents.map((document) =>
         plainToInstance(
           BaseDocumentDto,
           {
@@ -111,7 +110,7 @@ export class DocumentService {
             categoryName: document?.category?.name,
             authorName: document?.author?.name,
             publisherName: document?.publisher?.name,
-            isFavorite: favoriteDocumentMap.get(document.id) || false,
+            isFavorite: mappedFavoriteDocuments.has(document.id),
             favoriteCount: document?.favoriteDocuments?.length || 0,
           },
           {
@@ -120,9 +119,8 @@ export class DocumentService {
         ),
       );
     }
-
-    return rawDocuments.map(async (document) => {
-      return plainToInstance(
+    return documents.map((document) =>
+      plainToInstance(
         BaseDocumentDto,
         {
           ...document,
@@ -130,12 +128,13 @@ export class DocumentService {
           authorName: document?.author?.name,
           publisherName: document?.publisher?.name,
           isFavorite: false,
+          favoriteCount: document?.favoriteDocuments?.length || 0,
         },
         {
           excludeExtraneousValues: true,
         },
-      );
-    });
+      ),
+    );
   }
 
   async getAllDocumentsAsync() {

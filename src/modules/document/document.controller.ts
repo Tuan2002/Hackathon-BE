@@ -16,15 +16,23 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   Res,
   UploadedFile,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
 import { DocumentAiService } from './document-ai.service';
 import { DocumentFileService } from './document-file.service';
 import { DocumentService } from './document.service';
+import { BaseDocumentDto } from './dto/base-document.dto';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { DownloadFileDto } from './dto/download-file.dto';
 import { DownloadedDocumentDto } from './dto/downloaded-document.dto';
@@ -69,10 +77,22 @@ export class DocumentController {
 
   @Get('get-public-documents')
   @ApiOperation({ summary: 'Lấy danh sách tài liệu công khai' })
-  @ApiResponseType(PublicDocumentDto)
+  @ApiResponseType(BaseDocumentDto)
+  @ApiQuery({
+    name: 'categoryId',
+    required: false,
+    description: 'ID của danh mục tài liệu',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'authorId',
+    required: false,
+    description: 'ID của tác giả tài liệu',
+    type: String,
+  })
   async getPublicDocuments(
-    @Param('categoryId') categoryId: string,
-    @Param('authorId') authorId: string,
+    @Query('categoryId') categoryId?: string,
+    @Query('authorId') authorId?: string,
     @UserRequest() context?: AuthorizedContext,
   ) {
     return this.documentService.getPublicDocumentsAsync(
