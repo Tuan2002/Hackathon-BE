@@ -102,6 +102,34 @@ export class DocumentController {
     );
   }
 
+  @Auth()
+  @Get('get-auth-documents')
+  @ApiOperation({ summary: 'Lấy danh sách tài liệu sau khi đã đăng nhập' })
+  @ApiResponseType(BaseDocumentDto)
+  @ApiQuery({
+    name: 'categoryId',
+    required: false,
+    description: 'ID của danh mục tài liệu',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'authorId',
+    required: false,
+    description: 'ID của tác giả tài liệu',
+    type: String,
+  })
+  async getAuthDocuments(
+    @Query('categoryId') categoryId?: string,
+    @Query('authorId') authorId?: string,
+    @UserRequest() context?: AuthorizedContext,
+  ) {
+    return this.documentService.getPublicDocumentsAsync(
+      context,
+      categoryId,
+      authorId,
+    );
+  }
+
   @RBAC(UserRoles.ADMIN)
   @Get('get-documents')
   @ApiOperation({ summary: 'Lấy danh sách tài liệu' })
@@ -121,6 +149,7 @@ export class DocumentController {
     return this.documentService.createDocumentAsync(context, createDocumentDto);
   }
 
+  @RBAC(UserRoles.ADMIN, UserRoles.NORMAL_USER)
   @Get('get-by-id/:id')
   @ApiOperation({ summary: 'Lấy tài liệu theo id' })
   @ApiResponseType(PublicDocumentDto)
@@ -132,6 +161,17 @@ export class DocumentController {
   @ApiOperation({ summary: 'Lấy tài liệu theo slug' })
   @ApiResponseType(PublicDocumentDto)
   async getDocumentBySlug(
+    @Param('slug') slug: string,
+    @UserRequest() context?: AuthorizedContext,
+  ) {
+    return this.documentService.getDocumentBySlugAsync(slug, context);
+  }
+
+  @Auth()
+  @Get('auth-get-by-slug/:slug')
+  @ApiOperation({ summary: 'Lấy tài liệu theo slug sau khi đã đăng nhập' })
+  @ApiResponseType(PublicDocumentDto)
+  async getAuthDocumentBySlug(
     @Param('slug') slug: string,
     @UserRequest() context?: AuthorizedContext,
   ) {

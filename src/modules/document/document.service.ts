@@ -100,9 +100,11 @@ export class DocumentService {
         where: { userId: context.userId },
         select: ['documentId'],
       });
+
       const mappedFavoriteDocuments = new Map(
         favoriteDocumentIds.map((doc) => [doc.documentId, doc.documentId]),
       );
+
       return documents.map((document) =>
         plainToInstance(
           BaseDocumentDto,
@@ -141,7 +143,7 @@ export class DocumentService {
 
   async getAllDocumentsAsync() {
     const documents = await this.documentRepository.find({
-      relations: ['category', 'author', 'publisher'],
+      relations: ['category', 'author', 'publisher', 'favoriteDocuments'],
       order: {
         createdAt: 'DESC',
       },
@@ -155,6 +157,7 @@ export class DocumentService {
           authorName: document?.author?.name,
           categorySlug: document?.category?.slug,
           publisherName: document?.publisher?.name,
+          favoriteCount: document?.favoriteDocuments?.length || 0,
         },
         {
           excludeExtraneousValues: true,
@@ -166,14 +169,25 @@ export class DocumentService {
   async getDocumentByIdAsync(id: string) {
     const document = await this.documentRepository.findOne({
       where: { id },
-      relations: ['category', 'author', 'publisher'],
+      relations: ['category', 'author', 'publisher', 'favoriteDocuments'],
     });
     if (!document) {
       throw new NotFoundException('Không tìm thấy tài liệu');
     }
-    return plainToInstance(PublicDocumentDto, document, {
-      excludeExtraneousValues: true,
-    });
+    return plainToInstance(
+      PublicDocumentDto,
+      {
+        ...document,
+        categoryName: document?.category?.name,
+        authorName: document?.author?.name,
+        categorySlug: document?.category?.slug,
+        publisherName: document?.publisher?.name,
+        favoriteCount: document?.favoriteDocuments?.length || 0,
+      },
+      {
+        excludeExtraneousValues: true,
+      },
+    );
   }
 
   async getDocumentBySlugAsync(slug: string, context?: AuthorizedContext) {
