@@ -27,6 +27,7 @@ import { DocumentFileService } from './document-file.service';
 import { DocumentService } from './document.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { DownloadFileDto } from './dto/download-file.dto';
+import { DownloadedDocumentDto } from './dto/downloaded-document.dto';
 import { FileUploadDto, FileUploadResponseDto } from './dto/file-upload.dto';
 import { PublicDocumentDto } from './dto/public-document.dto';
 import { RejectDocumentDto } from './dto/reject-document.dto';
@@ -69,8 +70,16 @@ export class DocumentController {
   @Get('get-public-documents')
   @ApiOperation({ summary: 'Lấy danh sách tài liệu công khai' })
   @ApiResponseType(PublicDocumentDto)
-  async getPublicDocuments() {
-    return this.documentService.getPublicDocumentsAsync();
+  async getPublicDocuments(
+    @Param('categoryId') categoryId: string,
+    @Param('authorId') authorId: string,
+    @UserRequest() context?: AuthorizedContext,
+  ) {
+    return this.documentService.getPublicDocumentsAsync(
+      context,
+      categoryId,
+      authorId,
+    );
   }
 
   @RBAC(UserRoles.ADMIN)
@@ -102,8 +111,11 @@ export class DocumentController {
   @Get('get-by-slug/:slug')
   @ApiOperation({ summary: 'Lấy tài liệu theo slug' })
   @ApiResponseType(PublicDocumentDto)
-  async getDocumentBySlug(@Param('slug') slug: string) {
-    return this.documentService.getDocumentBySlugAsync(slug);
+  async getDocumentBySlug(
+    @Param('slug') slug: string,
+    @UserRequest() context?: AuthorizedContext,
+  ) {
+    return this.documentService.getDocumentBySlugAsync(slug, context);
   }
 
   @Auth()
@@ -194,5 +206,41 @@ export class DocumentController {
   @ApiResponseType(SummaryDocumentDto)
   async generateSummary(@Param('id') id: string) {
     return this.documentAiService.generateSummaryAsync(id);
+  }
+
+  @Auth()
+  @Get('get-favorite-documents')
+  @ApiOperation({ summary: 'Lấy danh sách tài liệu yêu thích' })
+  @ApiResponseType(PublicDocumentDto)
+  async getFavoriteDocuments(@UserRequest() context: AuthorizedContext) {
+    return this.documentService.getFavoriteDocumentsAsync(context);
+  }
+
+  @Auth()
+  @Patch('favorite-document/:id')
+  @ApiOperation({ summary: 'Thêm tài liệu vào yêu thích' })
+  async favoriteDocument(
+    @Param('id') id: string,
+    @UserRequest() context: AuthorizedContext,
+  ) {
+    return this.documentService.toggleFavoriteDocumentAsync(context, id);
+  }
+
+  @Auth()
+  @Get('downloaded-documents')
+  @ApiOperation({ summary: 'Lấy danh sách tài liệu đã tải về' })
+  @ApiResponseType(DownloadedDocumentDto)
+  async getDownloadedDocuments(@UserRequest() context: AuthorizedContext) {
+    return this.documentService.getDownloadedDocumentsAsync(context);
+  }
+
+  @RBAC(UserRoles.ADMIN)
+  @Get('all-downloaded-documents')
+  @ApiOperation({
+    summary: 'Lấy danh sách tài liệu đã tải về của tất cả người dùng',
+  })
+  @ApiResponseType(DownloadedDocumentDto)
+  async getAllDownloadedDocuments() {
+    return this.documentService.getAllDownloadedDocumentsAsync();
   }
 }

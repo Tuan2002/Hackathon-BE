@@ -33,4 +33,12 @@ export class PublicDocumentDto extends PickType(Document, [
   @ApiProperty()
   @Expose()
   publisherName?: string;
+
+  @ApiProperty()
+  @Expose()
+  isFavorite?: boolean;
+
+  @ApiProperty()
+  @Expose()
+  favoriteCount?: number;
 }

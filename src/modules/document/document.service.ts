@@ -7,19 +7,26 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { BaseDocumentDto } from './dto/base-document.dto';
 import { CreateDocumentDto } from './dto/create-document.dto';
+import { DownloadedDocumentDto } from './dto/downloaded-document.dto';
 import { PublicDocumentDto } from './dto/public-document.dto';
 import { RejectDocumentDto } from './dto/reject-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { Document } from './entities/document.entity';
+import { DownloadDocument } from './entities/download-document.entity';
+import { FavoriteDocument } from './entities/favorite-document.entity';
 import { DocumentStatus } from './enums/document-status.enum';
 @Injectable()
 export class DocumentService {
   constructor(
     @InjectRepository(Document)
     private documentRepository: Repository<Document>,
+    @InjectRepository(FavoriteDocument)
+    private favoriteDocumentRepository: Repository<FavoriteDocument>,
+    @InjectRepository(DownloadDocument)
+    private downloadDocumentRepository: Repository<DownloadDocument>,
   ) {}
 
   async createDocumentAsync(
@@ -70,31 +77,65 @@ export class DocumentService {
     );
   }
 
-  async getPublicDocumentsAsync() {
+  async getPublicDocumentsAsync(
+    context?: AuthorizedContext,
+    categoryId?: string,
+    authorId?: string,
+  ) {
     const rawDocuments = await this.documentRepository.find({
       where: {
         status: DocumentStatus.APPROVED,
         isActive: true,
+        categoryId,
+        authorId,
       },
-      relations: ['category', 'author', 'publisher'],
+      relations: ['category', 'author', 'publisher', 'favoriteDocuments'],
       order: {
         createdAt: 'DESC',
       },
     });
-    return rawDocuments.map((document) =>
-      plainToInstance(
+
+    if (context) {
+      const favoriteDocumentIds = await this.favoriteDocumentRepository.find({
+        where: { userId: context.userId },
+        select: ['documentId'],
+      });
+      const favoriteDocumentMap = new Map(
+        favoriteDocumentIds.map((doc) => [doc.documentId, true]),
+      );
+      return rawDocuments.map((document) =>
+        plainToInstance(
+          BaseDocumentDto,
+          {
+            ...document,
+            categoryName: document?.category?.name,
+            authorName: document?.author?.name,
+            publisherName: document?.publisher?.name,
+            isFavorite: favoriteDocumentMap.get(document.id) || false,
+            favoriteCount: document?.favoriteDocuments?.length || 0,
+          },
+          {
+            excludeExtraneousValues: true,
+          },
+        ),
+      );
+    }
+
+    return rawDocuments.map(async (document) => {
+      return plainToInstance(
         BaseDocumentDto,
         {
           ...document,
           categoryName: document?.category?.name,
           authorName: document?.author?.name,
           publisherName: document?.publisher?.name,
+          isFavorite: false,
         },
         {
           excludeExtraneousValues: true,
         },
-      ),
-    );
+      );
+    });
   }
 
   async getAllDocumentsAsync() {
@@ -133,12 +174,24 @@ export class DocumentService {
     });
   }
 
-  async getDocumentBySlugAsync(slug: string) {
+  async getDocumentBySlugAsync(slug: string, context?: AuthorizedContext) {
     const document = await this.documentRepository.findOne({
       where: { slug },
+      relations: ['category', 'author', 'publisher', 'favoriteDocuments'],
     });
+
     if (!document) {
       throw new NotFoundException('Không tìm thấy tài liệu');
+    }
+
+    let isFavorite = false;
+    if (context) {
+      isFavorite = await this.favoriteDocumentRepository.exists({
+        where: {
+          userId: context.userId,
+          documentId: document.id,
+        },
+      });
     }
     await this.documentRepository.increment(
       { id: document.id },
@@ -146,9 +199,20 @@ export class DocumentService {
       1,
     );
 
-    return plainToInstance(PublicDocumentDto, document, {
-      excludeExtraneousValues: true,
-    });
+    return plainToInstance(
+      PublicDocumentDto,
+      {
+        ...document,
+        categoryName: document?.category?.name,
+        authorName: document?.author?.name,
+        publisherName: document?.publisher?.name,
+        isFavorite: isFavorite,
+        favoriteCount: document?.favoriteDocuments?.length || 0,
+      },
+      {
+        excludeExtraneousValues: true,
+      },
+    );
   }
 
   async updateDocumentAsync(
@@ -317,5 +381,154 @@ export class DocumentService {
         excludeExtraneousValues: true,
       }),
     );
+  }
+
+  async toggleFavoriteDocumentAsync(
+    context: AuthorizedContext,
+    documentId: string,
+  ) {
+    const document = await this.documentRepository.findOne({
+      where: { id: documentId },
+    });
+
+    if (!document) {
+      throw new NotFoundException('Không tìm thấy tài liệu');
+    }
+
+    const favoriteDocument = await this.favoriteDocumentRepository.findOne({
+      where: {
+        userId: context.userId,
+        documentId,
+      },
+    });
+    if (favoriteDocument) {
+      await this.favoriteDocumentRepository.delete(favoriteDocument.id);
+      return {
+        documentId: document.id,
+        isFavorite: false,
+      };
+    }
+    await this.favoriteDocumentRepository.save({
+      userId: context.userId,
+      documentId,
+    });
+    return {
+      documentId: document.id,
+      isFavorite: true,
+    };
+  }
+
+  async getFavoriteDocumentsAsync(context: AuthorizedContext) {
+    const favoriteDocumentIds = await this.favoriteDocumentRepository.find({
+      where: { userId: context.userId },
+      select: ['documentId'],
+    });
+
+    const documents = await this.documentRepository.find({
+      where: {
+        id: In(favoriteDocumentIds.map((doc) => doc.documentId)),
+        status: DocumentStatus.APPROVED,
+        isActive: true,
+      },
+      relations: ['category', 'author', 'publisher'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    return documents.map((document) =>
+      plainToInstance(
+        PublicDocumentDto,
+        {
+          ...document,
+          categoryName: document?.category?.name,
+          authorName: document?.author?.name,
+          publisherName: document?.publisher?.name,
+        },
+        {
+          excludeExtraneousValues: true,
+        },
+      ),
+    );
+  }
+
+  async getDownloadedDocumentsAsync(context: AuthorizedContext) {
+    const downloadedDocuments = await this.downloadDocumentRepository.find({
+      where: { downloadUserId: context.userId },
+      select: ['documentId', 'downloadedAt'],
+    });
+
+    const documents = await this.documentRepository.find({
+      where: {
+        id: In(downloadedDocuments.map((doc) => doc.documentId)),
+        status: DocumentStatus.APPROVED,
+        isActive: true,
+      },
+      relations: ['category', 'author', 'publisher'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    const mappedDownloadedDocuments = new Map(
+      downloadedDocuments.map((doc) => [doc.documentId, doc]),
+    );
+    return documents.map((document) => {
+      plainToInstance(
+        PublicDocumentDto,
+        {
+          ...document,
+          categoryName: document?.category?.name,
+          authorName: document?.author?.name,
+          publisherName: document?.publisher?.name,
+          downloadedAt: mappedDownloadedDocuments.get(document.id)
+            ?.downloadedAt,
+        },
+        {
+          excludeExtraneousValues: true,
+        },
+      );
+    });
+  }
+
+  async getAllDownloadedDocumentsAsync() {
+    const downloadedDocuments = await this.downloadDocumentRepository.find({
+      relations: ['downloadUser', 'downloadAt'],
+      select: ['documentId', 'downloadedAt', 'downloadUser'],
+    });
+
+    const documents = await this.documentRepository.find({
+      where: {
+        id: In(downloadedDocuments.map((doc) => doc.documentId)),
+        status: DocumentStatus.APPROVED,
+        isActive: true,
+      },
+      relations: ['category', 'author', 'publisher'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    const mappedDownloadedDocuments = new Map(
+      downloadedDocuments.map((doc) => [doc.documentId, doc]),
+    );
+
+    return documents.map((document) => {
+      const downloadedDocument = mappedDownloadedDocuments.get(document.id);
+      return plainToInstance(
+        DownloadedDocumentDto,
+        {
+          ...document,
+          categoryName: document?.category?.name,
+          authorName: document?.author?.name,
+          publisherName: document?.publisher?.name,
+          downloadedAt: downloadedDocument?.downloadedAt,
+          downloadedBy: `${downloadedDocument?.downloadUser?.firstName} ${downloadedDocument?.downloadUser?.lastName}`,
+        },
+        {
+          excludeExtraneousValues: true,
+        },
+      );
+    });
   }
 }
