@@ -7,5 +7,5 @@ export const SecurityOptions = {
   LOCKOUT_DURATION: 5 * 60, // 5 minutes
   OTP_EXPIRATION_TIME: 5 * 60, // 5 minutes
   DEFAULT_PASSWORD: 'HACKATHON@2025',
-  PDF_PREVIEW_PAGE_LIMIT: 1,
+  PDF_PREVIEW_PAGE_LIMIT: 3,
 };

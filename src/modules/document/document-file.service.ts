@@ -3,13 +3,15 @@ import { SecurityOptions } from '@constants';
 import { AuthorizedContext } from '@modules/auth/types';
 import { S3FileService } from '@modules/s3-file/s3-file.service';
 import {
-    BadRequestException,
-    Injectable,
-    InternalServerErrorException,
-    NotFoundException,
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import axios, { HttpStatusCode } from 'axios';
 import * as dayjs from 'dayjs';
+import * as FormData from 'form-data';
 import * as libre from 'libreoffice-convert';
 import { PDFDocument } from 'pdf-lib';
 import * as PDFKit from 'pdfkit';
@@ -83,20 +85,49 @@ export class DocumentFileService {
       throw new BadRequestException('Tài liệu không hỗ trợ xem trước');
     }
     // Create a preview PDF
-    return this.createPreviewFileAsync(document.fileKey, document.fileType);
+    return this.createPreviewFileAsync(
+      document.fileKey,
+      document.fileName,
+      document.fileType,
+    );
   }
 
-  async createPreviewFileAsync(fileKey: string, mimeType: FileType) {
+  async createPreviewFileAsync(
+    fileKey: string,
+    fileName: string,
+    mimeType: FileType,
+  ) {
     try {
       const fileBuffer = await this.s3FileService.getFileStreamAsync(fileKey);
 
-      // Determine file mime type
       let pdfBuffer: Buffer;
+      if (mimeType !== FileType.PDF) {
+        const form = new FormData();
+        form.append('fileInput', Buffer.from(fileBuffer), {
+          filename: fileName,
+          contentType: mimeType,
+        });
 
-      if (mimeType === FileType.PDF) {
-        pdfBuffer = Buffer.from(fileBuffer);
+        const response = await axios.post(
+          `${process.env.PDF_CONVERT_API_URL}/api/v1/convert/file/pdf`,
+          form,
+          {
+            headers: {
+              ...form.getHeaders(),
+            },
+            responseType: 'arraybuffer', // important to get raw buffer back
+          },
+        );
+
+        if (response.status !== HttpStatusCode.Ok) {
+          throw new InternalServerErrorException(
+            'Failed to convert file to PDF on remote server',
+          );
+        }
+        pdfBuffer = Buffer.from(response.data);
       } else {
-        pdfBuffer = await this.convertToPdf(Buffer.from(fileBuffer), mimeType);
+        // If the file is already a PDF, use it directly
+        pdfBuffer = Buffer.from(fileBuffer);
       }
 
       // Load the PDF

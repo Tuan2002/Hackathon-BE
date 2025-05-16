@@ -52,6 +52,7 @@
     "class-validator": "^0.14.1",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
+    "form-data": "^4.0.2",
     "ioredis": "^5.4.2",
     "js-base64": "^3.7.7",
     "libreoffice-convert": "^1.6.1",
