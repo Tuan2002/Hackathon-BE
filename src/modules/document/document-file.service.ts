@@ -105,7 +105,6 @@ export class DocumentFileService {
         throw new BadRequestException('Tạo tệp PDF không thành công');
       }
 
-      // Check if the PDF is empty
       // Load the PDF
       const pdfDoc = await PDFDocument.load(pdfBuffer);
       const totalPages = pdfDoc.getPageCount();

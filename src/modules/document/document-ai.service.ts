@@ -3,6 +3,7 @@ import { GeminiService } from '@modules/gemini/gemini.service';
 import { S3FileService } from '@modules/s3-file/s3-file.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import axios from 'axios';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { DocumentCacheService } from './document-cache.service';
@@ -63,5 +64,36 @@ export class DocumentAiService {
       content: summary,
       documentId: document.id,
     });
+  }
+
+  async generateAudioSummaryAsync(documentId: string) {
+    const summary = await this.generateSummaryAsync(documentId);
+
+    if (!summary) {
+      throw new NotFoundException('Không tìm thấy nội dung tóm tắt');
+    }
+
+    const response = await axios.post(
+      `${process.env.TTS_API_URL}/v1/audio/speech`,
+      {
+        model: 'tts-1',
+        input: summary.content,
+        voice: 'vi-VN-NamMinhNeural',
+        speed: '1.2',
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.TTS_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        responseType: 'arraybuffer',
+      },
+    );
+
+    if (response.status !== 200) {
+      throw new NotFoundException('Không tìm thấy nội dung tóm tắt');
+    }
+
+    return Buffer.from(response.data);
   }
 }

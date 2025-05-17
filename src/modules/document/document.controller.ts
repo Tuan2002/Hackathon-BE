@@ -266,10 +266,21 @@ export class DocumentController {
 
   @Auth()
   @Get('generate-summary/:id')
-  @ApiOperation({ summary: 'Tạo tóm tắt tài liệu' })
+  @ApiOperation({ summary: 'Tạo tóm tắt tài liệu văn bản' })
   @ApiResponseType(SummaryDocumentDto)
   async generateSummary(@Param('id') id: string) {
     return this.documentAiService.generateSummaryAsync(id);
+  }
+
+  @Auth()
+  @Get('generate-audio-summary/:id')
+  @ApiOperation({ summary: 'Tạo tóm tắt tài liệu âm thanh' })
+  async generateAudioSummary(@Param('id') id: string, @Res() res: Response) {
+    const audioBuffer =
+      await this.documentAiService.generateAudioSummaryAsync(id);
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Content-Disposition', 'inline; filename=summary.buffer');
+    res.send(audioBuffer);
   }
 
   @Auth()
