@@ -563,6 +563,8 @@ export class DocumentService {
       relations: ['downloadUser'],
     });
 
+    console.log('============>: ', downloadedDocuments);
+
     return downloadedDocuments.map((doc) =>
       plainToInstance(
         DocumentAnalystDto,
