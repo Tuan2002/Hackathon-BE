@@ -17,7 +17,10 @@ export class BaseCacheService {
 
   async getCache(cacheKey: string) {
     const cacheData = await this.redis.get(cacheKey);
-    return cacheData ? JSON.parse(cacheData) : null;
+    if (!cacheData) {
+      return null;
+    }
+    return isJSON(cacheData) ? JSON.parse(cacheData) : cacheData;
   }
 
   async deleteCache(cacheKey: string) {

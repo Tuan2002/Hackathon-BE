@@ -1,4 +1,5 @@
 import { SecurityOptions } from '@constants';
+import { SystemService } from '@modules/system/system.service';
 import { User } from '@modules/user/entities/user.entity';
 import { UserRoles } from '@modules/user/enums/roles.enum';
 import { BadRequestException, Injectable } from '@nestjs/common';
@@ -25,6 +26,7 @@ export class AuthService {
     private jwtService: JwtService,
     private authCacheService: AuthCacheService,
     private authEmailService: AuthEmailService,
+    private systemService: SystemService,
 
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -69,6 +71,8 @@ export class AuthService {
 
   async credentialLoginAsync(credentialDto: CredentialLoginDto) {
     const { email, password } = credentialDto;
+    const activeConfig = await this.systemService.getFullActiveConfigAsync();
+
     const storedUser = await this.usersRepository.findOne({
       where: { email },
       select: {
@@ -95,7 +99,11 @@ export class AuthService {
       });
     }
 
-    if (storedUser.loginFailedTimes >= SecurityOptions.ATTEMPT_FAILURE_LIMIT) {
+    if (
+      storedUser.loginFailedTimes >=
+      (activeConfig?.config?.maxLoginAttempts ??
+        SecurityOptions.ATTEMPT_FAILURE_LIMIT)
+    ) {
       const lockoutTo = await this.authCacheService.getTemporaryLockout(
         storedUser.id,
       );
@@ -168,6 +176,7 @@ export class AuthService {
     );
 
     const newUser = this.usersRepository.create({
+      userName: email,
       email,
       hashedPassword: hashedPassword,
       firstName,
@@ -203,7 +212,6 @@ export class AuthService {
     }
 
     const otp = generateOTP();
-
     Promise.all([
       this.authCacheService.setOtpSession(existUser.id, otp),
       this.authEmailService.sendResetPasswordEmail(existUser.email, {

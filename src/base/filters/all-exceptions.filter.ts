@@ -43,6 +43,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     response.status(status).json({
       statusCode: status,
+      isSuccess: false,
+      message:
+        typeof data === 'string'
+          ? data
+          : (data as { message: string }).message ||
+            MESSAGES.UNKNOWN_EXCEPTION_MESSAGE,
       timestamp: new Date().toISOString(),
       path: request.url,
       data: typeof data === 'string' ? data : { ...data, statusCode: status },

@@ -1,6 +1,7 @@
 import { OTPGuard } from '@base/guards/otp.guard';
 import { JwtStrategy } from '@base/passports/jwt.strategy';
 import { SharedModule } from '@modules/shared/shared.module';
+import { SystemModule } from '@modules/system/system.module';
 import { User } from '@modules/user/entities/user.entity';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -23,6 +24,7 @@ import { AuthService } from './auth.service';
     }),
     TypeOrmModule.forFeature([User]),
     SharedModule,
+    SystemModule,
   ],
   controllers: [AuthController, AccountController],
   providers: [

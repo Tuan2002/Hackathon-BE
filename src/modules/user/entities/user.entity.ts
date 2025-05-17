@@ -1,7 +1,13 @@
 import { AbstractEntity } from '@base/entities/base.entity';
 import { SecurityOptions, Table } from '@constants';
+import { DocumentComment } from '@modules/document/entities/document-comment.entity';
+import { Document } from '@modules/document/entities/document.entity';
+import { DownloadDocument } from '@modules/document/entities/download-document.entity';
+import { FavoriteDocument } from '@modules/document/entities/favorite-document.entity';
+import { Feedback } from '@modules/feedback/entities/feedback.entity';
 import { Genders } from '@modules/user/enums';
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import {
   IsDate,
   IsEmail,
@@ -12,20 +18,21 @@ import {
   MinLength,
   ValidateIf,
 } from 'class-validator';
-import { BeforeUpdate, Column, Entity, Index } from 'typeorm';
+import { BeforeUpdate, Column, Entity, Index, OneToMany } from 'typeorm';
 import { UserRoles } from '../enums/roles.enum';
-
 @Index(['email'], { unique: true })
 @Entity(Table.User)
 export class User extends AbstractEntity {
   @ApiProperty()
   @IsNotEmpty()
+  @Expose()
   @IsString()
   @Column({ unique: true })
   userName: string;
 
   @ApiProperty()
   @IsNotEmpty()
+  @Expose()
   @IsEmail()
   @Column({ unique: true })
   email: string;
@@ -36,6 +43,7 @@ export class User extends AbstractEntity {
   hashedPassword: string;
 
   @ApiProperty()
+  @Expose()
   @Column({ default: false })
   // Automatically set to true when the user login fails 10 times
   isLocked: boolean;
@@ -50,6 +58,7 @@ export class User extends AbstractEntity {
 
   @ApiProperty({ enum: UserRoles, enumName: 'UserRoles' })
   @IsEnum(UserRoles)
+  @Expose()
   @IsNotEmpty()
   @Column({ enum: UserRoles })
   role: UserRoles;
@@ -57,46 +66,80 @@ export class User extends AbstractEntity {
   @ApiProperty({ nullable: true })
   @ValidateIf((o) => o.firstName !== null)
   @IsString()
+  @Expose()
   @Column({ nullable: true })
   firstName?: string;
 
   @ApiProperty({ nullable: true })
   @ValidateIf((o) => o.lastName !== null)
   @IsString()
+  @Expose()
   @Column({ nullable: true })
   lastName?: string;
 
   @ApiProperty({ nullable: true })
   @ValidateIf((o) => o.address !== null)
   @IsString()
+  @Expose()
   @Column({ nullable: true })
   address?: string;
 
   @ApiProperty({ nullable: true })
   @ValidateIf((o) => o.phone !== null)
   @IsString()
+  @Expose()
   @Column({ nullable: true })
   phone?: string;
 
   @ApiProperty({ nullable: true })
   @ValidateIf((o) => o.dob !== null)
   @IsDate()
+  @Expose()
   @Column({ nullable: true })
-  dob?: string;
+  dob?: Date;
 
   @ApiProperty({ nullable: true, enum: Genders, enumName: 'Gender' })
   @ValidateIf((o) => o.gender !== null)
   @IsEnum(Genders)
+  @Expose()
   @Column({ nullable: true, enum: Genders })
   gender?: Genders;
 
   @ApiProperty({ nullable: true })
   @ValidateIf((o) => o.avatar !== null)
   @IsUrl()
+  @Expose()
   @Column({
     nullable: true,
   })
   avatar?: string;
+
+  // Relations
+
+  // Documents
+  @OneToMany(() => Document, (document) => document.owner)
+  documents: Document[];
+
+  @OneToMany(
+    () => DownloadDocument,
+    (downloadDocument) => downloadDocument.downloadUser,
+  )
+  downloadDocuments: DownloadDocument[];
+
+  @OneToMany(
+    () => FavoriteDocument,
+    (favoriteDocument) => favoriteDocument.favoriteUser,
+  )
+  favoriteDocuments: FavoriteDocument[];
+
+  @OneToMany(
+    () => DocumentComment,
+    (documentComment) => documentComment.commenter,
+  )
+  documentComments: DocumentComment[];
+
+  @OneToMany(() => Feedback, (feedback) => feedback.reviewer)
+  feedbacks: Feedback[];
 
   @BeforeUpdate()
   lockoutUser() {
