@@ -20,6 +20,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "migration:run": "nest build && npx typeorm-ts-node-commonjs migration:run -d ./typeOrm.config.ts",
+    "migration:prod": "npx typeorm-ts-node-commonjs migration:run -d ./typeOrm.config.ts",
     "migration:create": "nest build && npx typeorm-ts-node-commonjs migration:create ./src/migrations/Migration",
     "migration:revert": "nest build && npx typeorm-ts-node-commonjs -d ./typeOrm.config.ts migration:revert",
     "migration:generate": "nest build && npx typeorm-ts-node-commonjs migration:generate ./src/migrations/Migration -d ./typeOrm.config.ts"
