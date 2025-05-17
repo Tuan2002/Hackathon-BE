@@ -10,6 +10,7 @@ import { plainToInstance } from 'class-transformer';
 import { In, Repository } from 'typeorm';
 import { BaseDocumentDto } from './dto/base-document.dto';
 import { CreateDocumentDto } from './dto/create-document.dto';
+import { DocumentAnalystDto } from './dto/document-analyst.dto';
 import { DownloadedDocumentDto } from './dto/downloaded-document.dto';
 import { PublicDocumentDto } from './dto/public-document.dto';
 import { RejectDocumentDto } from './dto/reject-document.dto';
@@ -548,6 +549,52 @@ export class DocumentService {
           downloadedAt: mappedDownloadedDocuments.get(document.id)
             ?.downloadedAt,
           downloadedBy: `${mappedDownloadedDocuments.get(document.id)?.downloadUser.firstName} ${mappedDownloadedDocuments.get(document.id)?.downloadUser?.lastName}`,
+        },
+        {
+          excludeExtraneousValues: true,
+        },
+      ),
+    );
+  }
+
+  async getDownloadUsersAsync(documentId: string) {
+    const downloadedDocuments = await this.downloadDocumentRepository.find({
+      where: { documentId },
+      relations: ['downloadUser'],
+    });
+
+    return downloadedDocuments.map((doc) =>
+      plainToInstance(
+        DocumentAnalystDto,
+        {
+          userId: doc.downloadUserId,
+          userName: `${doc.downloadUser.firstName} ${doc.downloadUser.lastName}`,
+          userEmail: doc.downloadUser.email,
+          avatar: doc.downloadUser.avatar,
+          documentId: doc.documentId,
+        },
+        {
+          excludeExtraneousValues: true,
+        },
+      ),
+    );
+  }
+
+  async getFavoriteUsersAsync(documentId: string) {
+    const favoriteDocuments = await this.favoriteDocumentRepository.find({
+      where: { documentId },
+      relations: ['favoriteUser'],
+    });
+
+    return favoriteDocuments.map((doc) =>
+      plainToInstance(
+        DocumentAnalystDto,
+        {
+          userId: doc.userId,
+          userName: `${doc.favoriteUser.firstName} ${doc.favoriteUser.lastName}`,
+          userEmail: doc.favoriteUser.email,
+          avatar: doc.favoriteUser.avatar,
+          documentId: doc.documentId,
         },
         {
           excludeExtraneousValues: true,

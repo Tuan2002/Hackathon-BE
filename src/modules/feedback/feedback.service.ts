@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { AddContactDto } from './dto/add-contact.dto';
 import { AddFeedbackDto } from './dto/add-feedback.dto';
 import { ContactDto } from './dto/contact.dto';
+import { FeedbackDto } from './dto/feedback.dto';
 import { ReplyContactDto } from './dto/reply-contact.dto';
 import { Contact } from './entities/contact.entity';
 import { Feedback } from './entities/feedback.entity';
@@ -20,17 +21,16 @@ export class FeedbackService {
     private readonly contactRepository: Repository<Contact>,
   ) {}
 
-  async getFeedbacksAsync(limit?: number) {
+  async getFeedbacksAsync() {
     const feedbacks = await this.feedbackRepository.find({
       where: { isActive: true },
       order: { createdAt: 'DESC' },
       relations: ['reviewer'],
-      take: limit,
     });
 
     return feedbacks.map((feedback) =>
       plainToInstance(
-        Feedback,
+        FeedbackDto,
         {
           ...feedback,
           reviewerName: `${feedback.reviewer?.firstName} ${feedback.reviewer?.lastName}`,
@@ -43,17 +43,16 @@ export class FeedbackService {
     );
   }
 
-  async getMyFeedbacksAsync(context: AuthorizedContext, limit?: number) {
+  async getMyFeedbacksAsync(context: AuthorizedContext) {
     const feedbacks = await this.feedbackRepository.find({
       where: { reviewerId: context.userId },
       order: { createdAt: 'DESC' },
       relations: ['reviewer'],
-      take: limit,
     });
 
     return feedbacks.map((feedback) =>
       plainToInstance(
-        Feedback,
+        FeedbackDto,
         {
           ...feedback,
           reviewerName: `${feedback.reviewer?.firstName} ${feedback.reviewer?.lastName}`,
@@ -75,7 +74,7 @@ export class FeedbackService {
       reviewerId: context.userId,
     });
     const newFeedback = await this.feedbackRepository.save(feedback);
-    return plainToInstance(Feedback, newFeedback, {
+    return plainToInstance(FeedbackDto, newFeedback, {
       excludeExtraneousValues: true,
     });
   }
@@ -95,7 +94,7 @@ export class FeedbackService {
     }
 
     const updatedFeedback = await this.feedbackRepository.save(addFeedbackDto);
-    return plainToInstance(Feedback, updatedFeedback, {
+    return plainToInstance(FeedbackDto, updatedFeedback, {
       excludeExtraneousValues: true,
     });
   }
@@ -109,7 +108,7 @@ export class FeedbackService {
     }
     feedback.isActive = !feedback.isActive;
     const updatedFeedback = await this.feedbackRepository.save(feedback);
-    return plainToInstance(Feedback, updatedFeedback, {
+    return plainToInstance(FeedbackDto, updatedFeedback, {
       excludeExtraneousValues: true,
     });
   }
@@ -133,17 +132,16 @@ export class FeedbackService {
 
   async createContactAsync(addContactDto: AddContactDto) {
     const contact = this.contactRepository.create(addContactDto);
-    const newContact = await this.contactRepository.save(contact);
 
+    const newContact = await this.contactRepository.save(contact);
     return plainToInstance(ContactDto, newContact, {
       excludeExtraneousValues: true,
     });
   }
 
-  async getContactsAsync(limit?: number) {
+  async getContactsAsync() {
     const contacts = await this.contactRepository.find({
       order: { createdAt: 'DESC' },
-      take: limit,
     });
 
     return contacts.map((contact) =>

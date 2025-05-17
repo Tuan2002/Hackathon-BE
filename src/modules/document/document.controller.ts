@@ -37,6 +37,7 @@ import { BaseCommentDto } from './dto/base-comment.dto';
 import { BaseDocumentDto } from './dto/base-document.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateDocumentDto } from './dto/create-document.dto';
+import { DocumentAnalystDto } from './dto/document-analyst.dto';
 import { DownloadFileDto } from './dto/download-file.dto';
 import { DownloadedDocumentDto } from './dto/downloaded-document.dto';
 import { FileUploadDto, FileUploadResponseDto } from './dto/file-upload.dto';
@@ -384,5 +385,25 @@ export class DocumentController {
       commentId,
       createCommentDto,
     );
+  }
+
+  @RBAC(UserRoles.ADMIN)
+  @Get('get-download-users/:documentId')
+  @ApiOperation({ summary: 'Lấy danh sách người dùng đã tải tài liệu' })
+  @ApiResponseType(DocumentAnalystDto, {
+    isArray: true,
+  })
+  async getDownloadUsers(@Param('documentId') documentId: string) {
+    return this.documentService.getDownloadUsersAsync(documentId);
+  }
+
+  @RBAC(UserRoles.ADMIN)
+  @Get('get-favorite-users/:documentId')
+  @ApiOperation({ summary: 'Lấy danh sách người dùng đã yêu thích tài liệu' })
+  @ApiResponseType(DocumentAnalystDto, {
+    isArray: true,
+  })
+  async getFavoriteUsers(@Param('documentId') documentId: string) {
+    return this.documentService.getFavoriteUsersAsync(documentId);
   }
 }

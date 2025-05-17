@@ -10,11 +10,11 @@ import {
     Get,
     Param,
     Post,
-    Put,
-    Query,
+    Put
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AddContactDto } from './dto/add-contact.dto';
+import { AddFeedbackDto } from './dto/add-feedback.dto';
 import { ContactDto } from './dto/contact.dto';
 import { FeedbackDto } from './dto/feedback.dto';
 import { ReplyContactDto } from './dto/reply-contact.dto';
@@ -28,52 +28,37 @@ export class FeedbackController {
   @ApiOperation({ summary: 'Lấy danh sách phản hồi' })
   @Get('feedbacks')
   @ApiResponseType(FeedbackDto, { isArray: true })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    description: 'Số lượng phản hồi tối đa',
-    type: Number,
-  })
-  async getFeedbacks(@Query() limit?: number) {
-    return this.feedBackService.getFeedbacksAsync(limit);
+  async getFeedbacks() {
+    return this.feedBackService.getFeedbacksAsync();
   }
 
   @Auth()
   @ApiOperation({ summary: 'Lấy phản hồi của tôi' })
   @Get('my-feedbacks')
   @ApiResponseType(FeedbackDto, { isArray: true })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    description: 'Số lượng phản hồi tối đa',
-    type: Number,
-  })
-  async getMyFeedbacks(
-    @UserRequest() context: AuthorizedContext,
-    @Query() limit?: number,
-  ) {
-    return this.feedBackService.getMyFeedbacksAsync(context, limit);
+  async getMyFeedbacks(@UserRequest() context: AuthorizedContext) {
+    return this.feedBackService.getMyFeedbacksAsync(context);
   }
 
-  @RBAC(UserRoles.NORMAL_USER)
+  @Auth()
   @ApiOperation({ summary: 'Gửi phản hồi' })
   @Post('create-feedback')
-  @ApiResponseType(FeedbackDto)
+  @ApiResponseType(AddFeedbackDto)
   async createFeedback(
-    @Body() addFeedbackDto: FeedbackDto,
+    @Body() addFeedbackDto: AddFeedbackDto,
     @UserRequest() context: AuthorizedContext,
   ) {
     return this.feedBackService.createFeedbackAsync(context, addFeedbackDto);
   }
 
-  @RBAC(UserRoles.NORMAL_USER)
+  @Auth()
   @ApiOperation({ summary: 'Câp nhật phản hồi' })
   @Put('update-feedback/:id')
   @ApiResponseType(FeedbackDto)
   async updateFeedback(
     @Param('id') id: string,
     @Body()
-    addFeedbackDto: FeedbackDto,
+    addFeedbackDto: AddFeedbackDto,
     @UserRequest() context: AuthorizedContext,
   ) {
     return this.feedBackService.updateFeedbackAsync(
@@ -83,10 +68,9 @@ export class FeedbackController {
     );
   }
 
-  @RBAC(UserRoles.NORMAL_USER, UserRoles.ADMIN)
+  @Auth()
   @ApiOperation({ summary: 'Xóa phản hồi' })
   @Delete('delete-feedback/:id')
-  @ApiResponseType(FeedbackDto)
   async deleteFeedback(
     @Param('id') id: string,
     @UserRequest() context: AuthorizedContext,
@@ -97,7 +81,6 @@ export class FeedbackController {
   @RBAC(UserRoles.ADMIN)
   @ApiOperation({ summary: 'Ẩn hiện phản hồi' })
   @Put('toggle-feedback/:id')
-  @ApiResponseType(FeedbackDto)
   async toggleFeedback(@Param('id') id: string) {
     return this.feedBackService.toggleFeedbackStatusAsync(id);
   }
@@ -106,14 +89,8 @@ export class FeedbackController {
   @ApiOperation({ summary: 'Lấy danh sách liên hệ' })
   @Get('contacts')
   @ApiResponseType(ContactDto, { isArray: true })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    description: 'Số lượng liên hệ tối đa',
-    type: Number,
-  })
-  async getContacts(@Query() limit?: number) {
-    return this.feedBackService.getContactsAsync(limit);
+  async getContacts() {
+    return this.feedBackService.getContactsAsync();
   }
 
   @ApiOperation({ summary: 'Gửi liên hệ' })
