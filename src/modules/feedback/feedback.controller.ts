@@ -1,9 +1,18 @@
-import { RBAC } from '@base/decorators/auth.decorator';
+import { Auth, RBAC } from '@base/decorators/auth.decorator';
 import { ApiResponseType } from '@base/decorators/response-swagger.decorator';
 import { UserRequest } from '@base/decorators/user-request.decorator';
 import { AuthorizedContext } from '@modules/auth/types';
 import { UserRoles } from '@modules/user/enums/roles.enum';
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Post,
+    Put,
+    Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AddContactDto } from './dto/add-contact.dto';
 import { ContactDto } from './dto/contact.dto';
@@ -29,6 +38,7 @@ export class FeedbackController {
     return this.feedBackService.getFeedbacksAsync(limit);
   }
 
+  @Auth()
   @ApiOperation({ summary: 'Lấy phản hồi của tôi' })
   @Get('my-feedbacks')
   @ApiResponseType(FeedbackDto, { isArray: true })
@@ -75,7 +85,7 @@ export class FeedbackController {
 
   @RBAC(UserRoles.NORMAL_USER, UserRoles.ADMIN)
   @ApiOperation({ summary: 'Xóa phản hồi' })
-  @Put('delete-feedback/:id')
+  @Delete('delete-feedback/:id')
   @ApiResponseType(FeedbackDto)
   async deleteFeedback(
     @Param('id') id: string,
