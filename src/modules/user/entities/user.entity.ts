@@ -4,6 +4,7 @@ import { DocumentComment } from '@modules/document/entities/document-comment.ent
 import { Document } from '@modules/document/entities/document.entity';
 import { DownloadDocument } from '@modules/document/entities/download-document.entity';
 import { FavoriteDocument } from '@modules/document/entities/favorite-document.entity';
+import { Feedback } from '@modules/feedback/entities/feedback.entity';
 import { Genders } from '@modules/user/enums';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
@@ -136,6 +137,9 @@ export class User extends AbstractEntity {
     (documentComment) => documentComment.commenter,
   )
   documentComments: DocumentComment[];
+
+  @OneToMany(() => Feedback, (feedback) => feedback.reviewer)
+  feedbacks: Feedback[];
 
   @BeforeUpdate()
   lockoutUser() {

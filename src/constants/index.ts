@@ -11,6 +11,8 @@ export enum Table {
   DocumentComment = 'document_comments',
   DownloadDocument = 'download_documents',
   FavoriteDocument = 'favorite_documents',
+  Contact = 'contacts',
+  Feedback = 'feedbacks',
 }
 
 export const GLOBAL_PREFIX = 'v1';

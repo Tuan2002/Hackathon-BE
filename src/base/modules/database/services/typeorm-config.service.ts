@@ -4,6 +4,8 @@ import { DocumentComment } from '@modules/document/entities/document-comment.ent
 import { Document } from '@modules/document/entities/document.entity';
 import { DownloadDocument } from '@modules/document/entities/download-document.entity';
 import { FavoriteDocument } from '@modules/document/entities/favorite-document.entity';
+import { Contact } from '@modules/feedback/entities/contact.entity';
+import { Feedback } from '@modules/feedback/entities/feedback.entity';
 import { Publisher } from '@modules/publisher/entities/publisher.entity';
 import { Banner } from '@modules/system/entities/banner.entity';
 import { Config } from '@modules/system/entities/config.entity';
@@ -39,6 +41,8 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         DownloadDocument,
         FavoriteDocument,
         DocumentComment,
+        Feedback,
+        Contact,
       ],
       namingStrategy: new SnakeNamingStrategy(),
       migrations: ['/migrations/**/*.ts'],
