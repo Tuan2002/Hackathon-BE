@@ -60,6 +60,7 @@ export class DocumentService {
   async getDocumentsByOwnerIdAsync(context: AuthorizedContext) {
     const documents = await this.documentRepository.find({
       where: { ownerId: context.userId },
+      relations: ['category', 'author', 'publisher', 'favoriteDocuments'],
     });
     return documents.map((document) =>
       plainToInstance(
@@ -70,6 +71,8 @@ export class DocumentService {
           authorName: document?.author?.name,
           categorySlug: document?.category?.slug,
           publisherName: document?.publisher?.name,
+          isFavorite: false,
+          favoriteCount: document?.favoriteDocuments?.length || 0,
         },
         {
           excludeExtraneousValues: true,
