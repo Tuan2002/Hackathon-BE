@@ -27,14 +27,14 @@ export class S3FileService {
     });
   }
 
-  async generateSignedUrlAsync(fileKey: string) {
+  async generateSignedUrlAsync(fileKey: string, expiresIn?: number) {
     const command = new GetObjectCommand({
       Bucket: process.env.DO_SPACE_BUCKET_NAME,
       Key: fileKey,
     });
 
     const signedUrl = await getSignedUrl(this.s3Client, command, {
-      expiresIn: SecurityOptions.FILE_SIGN_TIME,
+      expiresIn: expiresIn || SecurityOptions.FILE_SIGN_TIME,
     });
 
     return signedUrl;

@@ -18,6 +18,7 @@ export class GeminiService {
     const model = this.genAI.getGenerativeModel({
       model: GenAiModel.GEMINI_2_0_FLASH,
     });
+
     const result = await model.generateContent([
       {
         inlineData: {
@@ -29,5 +30,12 @@ export class GeminiService {
     ]);
 
     return result.response.text();
+  }
+
+  createModelAsync(model: GenAiModel) {
+    const geminiModel = this.genAI.getGenerativeModel({
+      model,
+    });
+    return geminiModel;
   }
 }

@@ -2,6 +2,7 @@ export const SecurityOptions = {
   JWT_EXPIRATION_TIME: '7d',
   PASSWORD_SALT_ROUNDS: 10,
   FILE_SIGN_TIME: 60, // 1 minute
+  AI_FILE_SIGN_TIME: 7 * 24 * 60 * 60, // 7 days
   ATTEMPT_FAILURE_LIMIT: 5,
   LOGIN_LOCKOUT_LIMIT: 20,
   LOCKOUT_DURATION: 5 * 60, // 5 minutes

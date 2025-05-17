@@ -170,9 +170,7 @@ export class DocumentFileService {
       return Buffer.from(response.data);
     } catch (error) {
       console.error('Error converting file to PDF:', error);
-      throw new BadRequestException(
-        'Failed to convert file to PDF. Please check the file format.',
-      );
+      throw new BadRequestException('Không thể chuyển đổi tệp sang PDF');
     }
   }
 }
