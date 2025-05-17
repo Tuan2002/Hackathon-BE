@@ -27,6 +27,16 @@ export class DocumentComment extends AbstractEntity {
   @Column({ type: 'text' })
   content: string;
 
+  @ApiProperty({ nullable: true })
+  @Expose()
+  @Column({ nullable: true })
+  image?: string;
+
+  @ApiProperty()
+  @Expose()
+  @Column({ default: false })
+  isEdited: boolean;
+
   @ApiProperty()
   @Expose()
   @Column({ default: 0 })

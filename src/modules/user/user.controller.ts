@@ -86,20 +86,4 @@ export class UserController {
   async resetPassword(@Param('userId') userId: string) {
     return await this.userService.resetPasswordAsync(userId);
   }
-
-  // @Post('upload-file')
-  // @ApiOperation({ summary: 'Tải lên tệp' })
-  // @FilesUpload(StorageFolders.USER_AVATARS, [FileType.PDF])
-  // async uploadFile(
-  //   @UploadedFile() file: Express.MulterS3.File,
-  //   @Body() uploadData: any,
-  // ) {
-  //   console.log('Uploaded file:', file);
-  //   console.log('Upload data:', uploadData);
-  //   return {
-  //     message: 'File uploaded successfully',
-  //     file,
-  //     uploadData,
-  //   };
-  // }
 }

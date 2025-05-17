@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { S3FileModule } from '../s3-file/s3-file.module';
 import { DocumentAiService } from './document-ai.service';
 import { DocumentCacheService } from './document-cache.service';
+import { DocumentCommentService } from './document-comment.service';
 import { DocumentFileService } from './document-file.service';
 import { DocumentController } from './document.controller';
 import { DocumentService } from './document.service';
@@ -29,12 +30,14 @@ import { FavoriteDocument } from './entities/favorite-document.entity';
     DocumentFileService,
     DocumentAiService,
     DocumentCacheService,
+    DocumentCommentService,
   ],
   exports: [
     DocumentService,
     DocumentFileService,
     DocumentAiService,
     DocumentCacheService,
+    DocumentCommentService,
   ],
 })
 export class DocumentModule {}

@@ -30,9 +30,12 @@ import {
 import { plainToInstance } from 'class-transformer';
 import { Response } from 'express';
 import { DocumentAiService } from './document-ai.service';
+import { DocumentCommentService } from './document-comment.service';
 import { DocumentFileService } from './document-file.service';
 import { DocumentService } from './document.service';
+import { BaseCommentDto } from './dto/base-comment.dto';
 import { BaseDocumentDto } from './dto/base-document.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { DownloadFileDto } from './dto/download-file.dto';
 import { DownloadedDocumentDto } from './dto/downloaded-document.dto';
@@ -48,6 +51,7 @@ export class DocumentController {
     private readonly documentService: DocumentService,
     private readonly documentFileService: DocumentFileService,
     private readonly documentAiService: DocumentAiService,
+    private readonly documentCommentService: DocumentCommentService,
   ) {}
 
   @RBAC(UserRoles.ADMIN, UserRoles.NORMAL_USER)
@@ -302,5 +306,72 @@ export class DocumentController {
   @ApiResponseType(DownloadedDocumentDto)
   async getAllDownloadedDocuments() {
     return this.documentService.getAllDownloadedDocumentsAsync();
+  }
+
+  @Auth()
+  @Post('post-comment/:documentId')
+  @ApiOperation({ summary: 'Đăng bình luận' })
+  @ApiResponseType(BaseCommentDto)
+  async postComment(
+    @Param('documentId') documentId: string,
+    @Body() createCommentDto: CreateCommentDto,
+    @UserRequest() context: AuthorizedContext,
+  ) {
+    return this.documentCommentService.createCommentAsync(
+      context,
+      documentId,
+      createCommentDto,
+    );
+  }
+
+  @Get('get-comments/:documentId')
+  @ApiOperation({ summary: 'Lấy danh sách bình luận' })
+  @ApiResponseType(BaseCommentDto, {
+    isArray: true,
+  })
+  async getComments(@Param('documentId') documentId: string) {
+    return this.documentCommentService.getCommentsByDocumentIdAsync(documentId);
+  }
+
+  @Auth()
+  @Patch('update-comment/:commentId')
+  @ApiOperation({ summary: 'Cập nhật bình luận' })
+  @ApiResponseType(BaseCommentDto)
+  async updateComment(
+    @Param('commentId') commentId: string,
+    @Body() updateCommentDto: CreateCommentDto,
+    @UserRequest() context: AuthorizedContext,
+  ) {
+    return this.documentCommentService.updateCommentAsync(
+      context,
+      commentId,
+      updateCommentDto,
+    );
+  }
+
+  @Auth()
+  @Delete('delete-comment/:commentId')
+  @ApiOperation({ summary: 'Xóa bình luận' })
+  async deleteComment(
+    @Param('commentId') commentId: string,
+    @UserRequest() context: AuthorizedContext,
+  ) {
+    return this.documentCommentService.deleteCommentAsync(context, commentId);
+  }
+
+  @Auth()
+  @Post('reply-comment/:commentId')
+  @ApiOperation({ summary: 'Trả lời bình luận' })
+  @ApiResponseType(BaseCommentDto)
+  async replyComment(
+    @Param('commentId') commentId: string,
+    @Body() createCommentDto: CreateCommentDto,
+    @UserRequest() context: AuthorizedContext,
+  ) {
+    return this.documentCommentService.replyCommentAsync(
+      context,
+      commentId,
+      createCommentDto,
+    );
   }
 }

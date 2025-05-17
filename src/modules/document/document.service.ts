@@ -112,6 +112,7 @@ export class DocumentService {
             ...document,
             categoryName: document?.category?.name,
             authorName: document?.author?.name,
+            categorySlug: document?.category?.slug,
             publisherName: document?.publisher?.name,
             isFavorite: mappedFavoriteDocuments.has(document.id),
             favoriteCount: document?.favoriteDocuments?.length || 0,
