@@ -2,7 +2,9 @@ import { OTPGuard } from '@base/guards/otp.guard';
 import { JwtStrategy } from '@base/passports/jwt.strategy';
 import { SharedModule } from '@modules/shared/shared.module';
 import { SystemModule } from '@modules/system/system.module';
+import { PointHistory } from '@modules/user/entities/point-history.entity';
 import { User } from '@modules/user/entities/user.entity';
+import { UserModule } from '@modules/user/user.module';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
@@ -22,9 +24,10 @@ import { AuthService } from './auth.service';
         secret: configService.getOrThrow<string>('JWT_SECRET'),
       }),
     }),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, PointHistory]),
     SharedModule,
     SystemModule,
+    UserModule,
   ],
   controllers: [AuthController, AccountController],
   providers: [

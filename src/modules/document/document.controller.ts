@@ -33,6 +33,7 @@ import { DocumentAiService } from './document-ai.service';
 import { DocumentCommentService } from './document-comment.service';
 import { DocumentFileService } from './document-file.service';
 import { DocumentService } from './document.service';
+import { ApproveDocumentDto } from './dto/approve-document.dto';
 import { BaseCommentDto } from './dto/base-comment.dto';
 import { BaseDocumentDto } from './dto/base-document.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -212,8 +213,11 @@ export class DocumentController {
   @RBAC(UserRoles.ADMIN)
   @Patch('approve-document/:id')
   @ApiOperation({ summary: 'Phê duyệt tài liệu' })
-  async approveDocument(@Param('id') id: string) {
-    return this.documentService.approveDocumentAsync(id);
+  async approveDocument(
+    @Param('id') id: string,
+    @Body() approveDocumentDto: ApproveDocumentDto,
+  ) {
+    return this.documentService.approveDocumentAsync(id, approveDocumentDto);
   }
 
   @RBAC(UserRoles.ADMIN)

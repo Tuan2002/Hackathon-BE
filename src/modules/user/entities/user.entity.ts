@@ -13,6 +13,7 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsString,
   IsUrl,
   MinLength,
@@ -20,6 +21,8 @@ import {
 } from 'class-validator';
 import { BeforeUpdate, Column, Entity, Index, OneToMany } from 'typeorm';
 import { UserRoles } from '../enums/roles.enum';
+import { PointHistory } from './point-history.entity';
+import { Transaction } from './transaction.entity';
 @Index(['email'], { unique: true })
 @Entity(Table.User)
 export class User extends AbstractEntity {
@@ -114,7 +117,18 @@ export class User extends AbstractEntity {
   })
   avatar?: string;
 
+  @ApiProperty({ nullable: true })
+  @IsNumber()
+  @Expose()
+  @Column({ default: 100 })
+  point: number;
+
   // Relations
+  @OneToMany(() => Transaction, (transaction) => transaction.paymentUser)
+  transactions: Transaction[];
+
+  @OneToMany(() => PointHistory, (pointHistory) => pointHistory.historyUser)
+  pointHistories: PointHistory[];
 
   // Documents
   @OneToMany(() => Document, (document) => document.owner)

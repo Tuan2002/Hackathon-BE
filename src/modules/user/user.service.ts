@@ -8,13 +8,18 @@ import { Not, Repository } from 'typeorm';
 import { BaseUserDto } from './dto/base-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user..dto';
+import { PointHistory } from './entities/point-history.entity';
 import { User } from './entities/user.entity';
+import { PointAction } from './enums/point-action.enum';
+import { PointNote } from './enums/point-note.enum';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(PointHistory)
+    private pointHistoryRepository: Repository<PointHistory>,
     private systemService: SystemService,
   ) {}
 
@@ -175,5 +180,63 @@ export class UserService {
     return plainToInstance(BaseUserDto, userInfo, {
       excludeExtraneousValues: true,
     });
+  }
+
+  async addPointAsync(userId: string, point: number, note: string | PointNote) {
+    const userInfo = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!userInfo) {
+      throw new BadRequestException({
+        message: 'Người dùng không tồn tại, không thể cộng điểm',
+      });
+    }
+
+    userInfo.point += point;
+    await this.usersRepository.save(userInfo);
+
+    await this.pointHistoryRepository.save({
+      amount: point,
+      pointAction: PointAction.INCREASE,
+      note,
+      historyUserId: userId,
+    });
+
+    return {
+      userId: userInfo.id,
+      point,
+    };
+  }
+
+  async subtractPointAsync(
+    userId: string,
+    point: number,
+    note: string | PointNote,
+  ) {
+    const userInfo = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!userInfo) {
+      throw new BadRequestException({
+        message: 'Người dùng không tồn tại, không thể trừ điểm',
+      });
+    }
+
+    userInfo.point -= point;
+    await this.usersRepository.save(userInfo);
+
+    await this.pointHistoryRepository.save({
+      amount: point,
+      pointAction: PointAction.DECREASE,
+      note,
+      historyUserId: userId,
+    });
+
+    return {
+      userId: userInfo.id,
+      point,
+    };
   }
 }

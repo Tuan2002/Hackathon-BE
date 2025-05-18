@@ -3,6 +3,7 @@ import { Table } from '@constants';
 import { User } from '@modules/user/entities/user.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
+import { IsString } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -15,11 +16,13 @@ import { Document } from './document.entity';
 @Entity(Table.DownloadDocument)
 export class DownloadDocument extends AbstractEntity {
   @ApiProperty()
+  @IsString()
   @Expose()
   @Column()
   documentId: string;
 
   @ApiProperty()
+  @IsString()
   @Expose()
   @Column()
   downloadUserId: string;

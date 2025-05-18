@@ -1,5 +1,7 @@
 import { AuthorizedContext } from '@modules/auth/types';
+import { PointNote } from '@modules/user/enums/point-note.enum';
 import { UserRoles } from '@modules/user/enums/roles.enum';
+import { UserService } from '@modules/user/user.service';
 import {
   ForbiddenException,
   Injectable,
@@ -8,6 +10,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { In, Repository } from 'typeorm';
+import { ApproveDocumentDto } from './dto/approve-document.dto';
 import { BaseDocumentDto } from './dto/base-document.dto';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { DocumentAnalystDto } from './dto/document-analyst.dto';
@@ -28,6 +31,7 @@ export class DocumentService {
     private favoriteDocumentRepository: Repository<FavoriteDocument>,
     @InjectRepository(DownloadDocument)
     private downloadDocumentRepository: Repository<DownloadDocument>,
+    private userService: UserService,
   ) {}
 
   async createDocumentAsync(
@@ -291,16 +295,30 @@ export class DocumentService {
     };
   }
 
-  async approveDocumentAsync(id: string) {
+  async approveDocumentAsync(
+    id: string,
+    approveDocumentDto: ApproveDocumentDto,
+  ) {
     const document = await this.documentRepository.findOne({
       where: { id },
     });
     if (!document) {
       throw new NotFoundException('Không tìm thấy tài liệu');
     }
+
     await this.documentRepository.update(id, {
       status: DocumentStatus.APPROVED,
+      point: approveDocumentDto.point,
     });
+
+    if (approveDocumentDto.point > 0) {
+      await this.userService.addPointAsync(
+        document.ownerId,
+        approveDocumentDto.point,
+        PointNote.DOCUMENT_UPLOAD_REWARD,
+      );
+    }
+
     return {
       documentId: document.id,
       status: DocumentStatus.APPROVED,

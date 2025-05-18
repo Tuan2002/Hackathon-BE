@@ -2,6 +2,8 @@ import { SecurityOptions } from './securityOptions';
 
 export enum Table {
   User = 'users',
+  Transaction = 'transactions',
+  PointHistory = 'point_histories',
   Category = 'categories',
   Publisher = 'publishers',
   Author = 'authors',

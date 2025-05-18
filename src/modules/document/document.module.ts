@@ -1,4 +1,7 @@
 import { GeminiModule } from '@modules/gemini/gemini.module';
+import { PointHistory } from '@modules/user/entities/point-history.entity';
+import { User } from '@modules/user/entities/user.entity';
+import { UserModule } from '@modules/user/user.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { S3FileModule } from '../s3-file/s3-file.module';
@@ -16,6 +19,8 @@ import { FavoriteDocument } from './entities/favorite-document.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
+      User,
+      PointHistory,
       Document,
       DocumentComment,
       FavoriteDocument,
@@ -24,6 +29,7 @@ import { FavoriteDocument } from './entities/favorite-document.entity';
     ]),
     S3FileModule,
     GeminiModule,
+    UserModule,
   ],
   controllers: [DocumentController],
   providers: [

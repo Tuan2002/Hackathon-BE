@@ -11,6 +11,7 @@ import {
   IsEnum,
   IsIn,
   IsNotEmpty,
+  IsNumber,
   IsString,
   IsUrl,
   IsUUID,
@@ -55,6 +56,12 @@ export class Document extends AbstractEntity {
   @Expose()
   @Column({ nullable: true })
   image: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @Expose()
+  @Column({ default: 0 })
+  point: number;
 
   @ApiProperty({ enum: DocumentStatus, enumName: 'DocumentStatus' })
   @IsEnum(DocumentStatus)

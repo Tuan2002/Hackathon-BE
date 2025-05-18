@@ -9,6 +9,8 @@ import { Feedback } from '@modules/feedback/entities/feedback.entity';
 import { Publisher } from '@modules/publisher/entities/publisher.entity';
 import { Banner } from '@modules/system/entities/banner.entity';
 import { Config } from '@modules/system/entities/config.entity';
+import { PointHistory } from '@modules/user/entities/point-history.entity';
+import { Transaction } from '@modules/user/entities/transaction.entity';
 import { User } from '@modules/user/entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -32,6 +34,8 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       synchronize: false,
       entities: [
         User,
+        Transaction,
+        PointHistory,
         Category,
         Config,
         Banner,

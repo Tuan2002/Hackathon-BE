@@ -2,6 +2,8 @@ import { FileType } from '@base/enums/file.enum';
 import { SecurityOptions } from '@constants';
 import { AuthorizedContext } from '@modules/auth/types';
 import { S3FileService } from '@modules/s3-file/s3-file.service';
+import { PointNote } from '@modules/user/enums/point-note.enum';
+import { UserService } from '@modules/user/user.service';
 import {
   BadRequestException,
   Injectable,
@@ -24,6 +26,7 @@ export class DocumentFileService {
     @InjectRepository(DownloadDocument)
     private downloadDocumentRepository: Repository<DownloadDocument>,
     private readonly s3FileService: S3FileService,
+    private readonly userService: UserService,
   ) {}
 
   async getDownloadDocumentUrlAsync(
@@ -50,6 +53,19 @@ export class DocumentFileService {
       'downloadCount',
       1,
     );
+    if (document.point > 0) {
+      await this.userService.addPointAsync(
+        document.ownerId,
+        document.point,
+        PointNote.ANOTHER_DOWNLOAD_DOCUMENT,
+      );
+
+      await this.userService.subtractPointAsync(
+        context.userId,
+        document.point,
+        PointNote.DOWNLOADED_DOCUMENT,
+      );
+    }
 
     return {
       url: signedUrl,

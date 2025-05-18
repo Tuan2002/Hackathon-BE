@@ -1,7 +1,9 @@
 import { SecurityOptions } from '@constants';
 import { SystemService } from '@modules/system/system.service';
 import { User } from '@modules/user/entities/user.entity';
+import { PointNote } from '@modules/user/enums/point-note.enum';
 import { UserRoles } from '@modules/user/enums/roles.enum';
+import { UserService } from '@modules/user/user.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -27,6 +29,7 @@ export class AuthService {
     private authCacheService: AuthCacheService,
     private authEmailService: AuthEmailService,
     private systemService: SystemService,
+    private userService: UserService,
 
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -183,7 +186,14 @@ export class AuthService {
       lastName,
       role: UserRoles.NORMAL_USER,
     });
+
     await this.usersRepository.save(newUser);
+    await this.userService.addPointAsync(
+      newUser.id,
+      1000,
+      PointNote.REGISTER_REWARD,
+    );
+
     return plainToInstance(
       ResponseRegister,
       {
