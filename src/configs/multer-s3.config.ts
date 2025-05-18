@@ -1,8 +1,8 @@
 import { S3Client } from '@aws-sdk/client-s3';
 import { StoragePermission } from '@base/enums/storage-permission.enum';
 import { StorageEngine } from 'multer';
-import * as multerS3 from 'multer-s3';
-import * as slug from 'slug';
+import multerS3 from 'multer-s3';
+import slug from 'slug';
 
 const s3Client = new S3Client({
   endpoint: process.env.DO_SPACE_ENDPOINT,

@@ -16,6 +16,7 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BaseUserDto } from './dto/base-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PointHistoryDto } from './dto/point-history.dto';
+import { TransactionDto } from './dto/transaction.dto';
 import { UpdateUserDto } from './dto/update-user..dto';
 import { UserRoles } from './enums/roles.enum';
 import { PointHistoryService } from './point-history.service';
@@ -111,5 +112,20 @@ export class UserController {
     return await this.pointHistoryService.getPointHistoriesByUserIdAsync(
       userId,
     );
+  }
+
+  @Get('my-transactions')
+  @ApiOperation({ summary: 'Lấy lịch sử giao dịch của tôi' })
+  @ApiResponseType(TransactionDto, { isArray: true })
+  async getMyTransactions(@UserRequest() context: AuthorizedContext) {
+    return await this.userService.getTransactionByUserIdAsync(context.userId);
+  }
+
+  @RBAC(UserRoles.ADMIN)
+  @Get('transactions/:userId')
+  @ApiOperation({ summary: 'Lấy lịch sử giao dịch của người dùng' })
+  @ApiResponseType(TransactionDto, { isArray: true })
+  async getTransactionsByUserId(@Param('userId') userId: string) {
+    return await this.userService.getTransactionByUserIdAsync(userId);
   }
 }

@@ -2,7 +2,7 @@ import { SecurityOptions } from '@constants';
 import { User } from '@modules/user/entities/user.entity';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { ChangePasswordDto } from './dto/change-password.dto';

@@ -7,7 +7,7 @@ import { UserService } from '@modules/user/user.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 import { plainToInstance } from 'class-transformer';
 import dayjs from 'dayjs';
 import { generateOTP } from 'otp-agent';

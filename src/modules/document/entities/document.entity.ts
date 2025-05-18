@@ -17,7 +17,7 @@ import {
   IsUUID,
   ValidateIf,
 } from 'class-validator';
-import * as slug from 'slug';
+import slug from 'slug';
 import {
   BeforeInsert,
   BeforeUpdate,

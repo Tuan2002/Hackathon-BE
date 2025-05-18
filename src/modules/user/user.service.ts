@@ -2,16 +2,19 @@ import { SecurityOptions } from '@constants';
 import { SystemService } from '@modules/system/system.service';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 import { plainToInstance } from 'class-transformer';
 import { Not, Repository } from 'typeorm';
 import { BaseUserDto } from './dto/base-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { TransactionDto } from './dto/transaction.dto';
 import { UpdateUserDto } from './dto/update-user..dto';
 import { PointHistory } from './entities/point-history.entity';
+import { Transaction } from './entities/transaction.entity';
 import { User } from './entities/user.entity';
 import { PointAction } from './enums/point-action.enum';
 import { PointNote } from './enums/point-note.enum';
+import { TransactionStatus } from './enums/transaction-status.enum';
 
 @Injectable()
 export class UserService {
@@ -20,6 +23,8 @@ export class UserService {
     private usersRepository: Repository<User>,
     @InjectRepository(PointHistory)
     private pointHistoryRepository: Repository<PointHistory>,
+    @InjectRepository(Transaction)
+    private transactionRepository: Repository<Transaction>,
     private systemService: SystemService,
   ) {}
 
@@ -247,5 +252,95 @@ export class UserService {
       userId: userInfo.id,
       point,
     };
+  }
+
+  async createTransactionAsync(
+    userId: string,
+    transactionHash: string,
+    amount: number,
+  ) {
+    const userInfo = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+    if (!userInfo) {
+      throw new BadRequestException({
+        message: 'Người dùng không tồn tại, không thể tạo giao dịch',
+      });
+    }
+
+    const newTransaction = this.transactionRepository.create({
+      transactionHash,
+      amount,
+      paymentUserId: userId,
+    });
+    await this.transactionRepository.save(newTransaction);
+    return {
+      transactionId: newTransaction.id,
+      transactionHash: newTransaction.transactionHash,
+    };
+  }
+
+  async confirmTransactionAsync(transactionHash: string, amount: number) {
+    const transactionInfo = await this.transactionRepository.findOne({
+      where: { transactionHash, status: TransactionStatus.PENDING },
+    });
+    if (!transactionInfo) {
+      throw new BadRequestException({
+        message: 'Giao dịch không tồn tại',
+      });
+    }
+
+    const receivedPoint = Math.floor(amount / SecurityOptions.EXCHANGE_RATE);
+    transactionInfo.status = TransactionStatus.SUCCESS;
+
+    await this.transactionRepository.save(transactionInfo);
+    await this.addPointAsync(
+      transactionInfo.paymentUserId,
+      receivedPoint,
+      PointNote.MONEY_TOP_UP,
+    );
+
+    return {
+      transactionId: transactionInfo.id,
+      transactionHash: transactionInfo.transactionHash,
+    };
+  }
+
+  async cancelTransactionAsync(transactionHash: string, reason: string) {
+    const transactionInfo = await this.transactionRepository.findOne({
+      where: { transactionHash },
+    });
+    if (!transactionInfo) {
+      throw new BadRequestException({
+        message: 'Giao dịch không tồn tại',
+      });
+    }
+
+    await this.transactionRepository.save({
+      ...transactionInfo,
+      status: TransactionStatus.FAILED,
+      failedReason: reason,
+    });
+
+    return {
+      transactionId: transactionInfo.id,
+      transactionHash: transactionInfo.transactionHash,
+    };
+  }
+
+  async getTransactionByUserIdAsync(userId: string) {
+    const transactions = await this.transactionRepository.find({
+      where: { paymentUserId: userId },
+      relations: ['paymentUser'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    return transactions.map((transaction) => {
+      return plainToInstance(TransactionDto, transaction, {
+        excludeExtraneousValues: true,
+      });
+    });
   }
 }

@@ -2,8 +2,9 @@ import { AbstractEntity } from '@base/entities/base.entity';
 import { Table } from '@constants';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { IsBoolean, IsNumber, IsString, ValidateIf } from 'class-validator';
+import { IsEnum, IsNumber, IsString, ValidateIf } from 'class-validator';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { TransactionStatus } from '../enums/transaction-status.enum';
 import { User } from './user.entity';
 
 @Entity(Table.Transaction)
@@ -20,11 +21,16 @@ export class Transaction extends AbstractEntity {
   @Column()
   amount: number;
 
-  @ApiProperty()
-  @IsBoolean()
+  @ApiProperty({
+    enum: TransactionStatus,
+    enumName: 'TransactionStatus',
+  })
+  @IsEnum(TransactionStatus)
   @Expose()
-  @Column({ default: false })
-  isSuccess: boolean;
+  @Column({
+    default: TransactionStatus.PENDING,
+  })
+  status: TransactionStatus;
 
   @ApiProperty()
   @ValidateIf((o) => o.isSuccess === false && o.failedReason !== undefined)

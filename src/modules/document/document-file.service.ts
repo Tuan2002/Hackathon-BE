@@ -12,8 +12,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios, { HttpStatusCode } from 'axios';
-import * as dayjs from 'dayjs';
-import * as FormData from 'form-data';
+import dayjs from 'dayjs';
+import FormData from 'form-data';
 import { PDFDocument } from 'pdf-lib';
 import { Repository } from 'typeorm';
 import { Document } from './entities/document.entity';

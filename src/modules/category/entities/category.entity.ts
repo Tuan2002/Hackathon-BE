@@ -4,7 +4,7 @@ import { Document } from '@modules/document/entities/document.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import * as slug from 'slug';
+import slug from 'slug';
 import {
   BeforeInsert,
   BeforeUpdate,
