@@ -9,6 +9,7 @@ export class BaseUserDto extends PickType(User, [
   'lastName',
   'gender',
   'avatar',
+  'point',
   'phone',
   'address',
   'dob',

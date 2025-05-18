@@ -42,6 +42,7 @@ export class ResponseCurrentUser extends PickType(User, [
   'dob',
   'gender',
   'phone',
+  'point',
   'isFirstLogin',
   'address',
   'role',
