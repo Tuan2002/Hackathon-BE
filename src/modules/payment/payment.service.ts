@@ -30,8 +30,8 @@ export class PaymentService {
           price: amount,
         },
       ],
-      cancelUrl: `${process.env.FRONTEND_URL}/deposit/success`,
-      returnUrl: `${process.env.FRONTEND_URL}/deposit/error`,
+      cancelUrl: `${process.env.FRONTEND_URL}/deposit/error`,
+      returnUrl: `${process.env.FRONTEND_URL}/deposit/success`,
       amount: amount,
     };
 
