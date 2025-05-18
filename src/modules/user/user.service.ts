@@ -201,6 +201,7 @@ export class UserService {
       pointAction: PointAction.INCREASE,
       note,
       historyUserId: userId,
+      lastPoint: userInfo.point,
     });
     await this.pointHistoryRepository.save(newPointHistory);
 
@@ -238,6 +239,7 @@ export class UserService {
       pointAction: PointAction.DECREASE,
       note,
       historyUserId: userId,
+      lastPoint: userInfo.point,
     });
     await this.pointHistoryRepository.save(newPointHistory);
 

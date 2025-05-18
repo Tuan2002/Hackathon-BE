@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PointHistory } from './entities/point-history.entity';
 import { User } from './entities/user.entity';
+import { PointHistoryService } from './point-history.service';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 
@@ -14,7 +15,7 @@ import { UserService } from './user.service';
     SystemModule,
   ],
   controllers: [UserController],
-  providers: [UserService],
-  exports: [UserService],
+  providers: [UserService, PointHistoryService],
+  exports: [UserService, PointHistoryService],
 })
 export class UserModule {}

@@ -1,5 +1,7 @@
 import { Auth, RBAC } from '@base/decorators/auth.decorator';
 import { ApiResponseType } from '@base/decorators/response-swagger.decorator';
+import { UserRequest } from '@base/decorators/user-request.decorator';
+import { AuthorizedContext } from '@modules/auth/types';
 import {
   Body,
   Controller,
@@ -13,15 +15,20 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BaseUserDto } from './dto/base-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { PointHistoryDto } from './dto/point-history.dto';
 import { UpdateUserDto } from './dto/update-user..dto';
 import { UserRoles } from './enums/roles.enum';
+import { PointHistoryService } from './point-history.service';
 import { UserService } from './user.service';
 
 @ApiTags('Users')
 @Auth()
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly pointHistoryService: PointHistoryService,
+  ) {}
 
   @RBAC(UserRoles.ADMIN)
   @ApiOperation({ summary: 'Lấy danh sách người dùng' })
@@ -85,5 +92,24 @@ export class UserController {
   @Patch('reset-password/:userId')
   async resetPassword(@Param('userId') userId: string) {
     return await this.userService.resetPasswordAsync(userId);
+  }
+
+  @Get('my-point-history')
+  @ApiOperation({ summary: 'Lấy lịch sử điểm của tôi' })
+  @ApiResponseType(PointHistoryDto, { isArray: true })
+  async getMyPointHistory(@UserRequest() context: AuthorizedContext) {
+    return await this.pointHistoryService.getPointHistoriesByUserIdAsync(
+      context.userId,
+    );
+  }
+
+  @RBAC(UserRoles.ADMIN)
+  @Get('point-history/:userId')
+  @ApiOperation({ summary: 'Lấy lịch sử điểm của người dùng' })
+  @ApiResponseType(PointHistoryDto, { isArray: true })
+  async getPointHistoryByUserId(@Param('userId') userId: string) {
+    return await this.pointHistoryService.getPointHistoriesByUserIdAsync(
+      userId,
+    );
   }
 }

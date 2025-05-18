@@ -15,6 +15,12 @@ export class PointHistory extends AbstractEntity {
   @Column()
   amount: number;
 
+  @ApiProperty()
+  @IsNumber()
+  @Expose()
+  @Column({ nullable: true })
+  lastPoint: number;
+
   @ApiProperty({ enum: PointAction, enumName: 'PointAction' })
   @IsEnum(PointAction)
   @Expose()
