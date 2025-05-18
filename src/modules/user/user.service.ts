@@ -196,12 +196,13 @@ export class UserService {
     userInfo.point += point;
     await this.usersRepository.save(userInfo);
 
-    await this.pointHistoryRepository.save({
+    const newPointHistory = this.pointHistoryRepository.create({
       amount: point,
       pointAction: PointAction.INCREASE,
       note,
       historyUserId: userId,
     });
+    await this.pointHistoryRepository.save(newPointHistory);
 
     return {
       userId: userInfo.id,
@@ -224,15 +225,21 @@ export class UserService {
       });
     }
 
+    if (userInfo.point < point) {
+      throw new BadRequestException({
+        message: 'Người dùng không đủ điểm trong tài khoản',
+      });
+    }
+
     userInfo.point -= point;
     await this.usersRepository.save(userInfo);
-
-    await this.pointHistoryRepository.save({
+    const newPointHistory = this.pointHistoryRepository.create({
       amount: point,
       pointAction: PointAction.DECREASE,
       note,
       historyUserId: userId,
     });
+    await this.pointHistoryRepository.save(newPointHistory);
 
     return {
       userId: userInfo.id,

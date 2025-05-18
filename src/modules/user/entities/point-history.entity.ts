@@ -37,6 +37,6 @@ export class PointHistory extends AbstractEntity {
   @ManyToOne(() => User, (user) => user.pointHistories, {
     nullable: false,
   })
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'history_user_id' })
   historyUser: User;
 }
