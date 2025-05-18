@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
+import { PointHistoryDto } from './dto/point-history.dto';
 import { PointHistory } from './entities/point-history.entity';
 @Injectable()
 export class PointHistoryService {
@@ -22,7 +23,7 @@ export class PointHistoryService {
     });
     return pointHistories.map((pointHistory) => {
       return plainToInstance(
-        PointHistory,
+        PointHistoryDto,
         {
           ...pointHistory,
           userName: `${pointHistory.historyUser.firstName} ${pointHistory.historyUser.lastName}`,
